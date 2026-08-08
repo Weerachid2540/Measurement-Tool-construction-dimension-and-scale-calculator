@@ -1,0 +1,86 @@
+/**
+ * Design tokens. Every colour, radius and spacing step in the app resolves through
+ * these variables — restyling the tool for another design system means editing this
+ * file only.
+ */
+:root {
+  --mt-font-sans:
+    'Sarabun', 'IBM Plex Sans Thai', 'Noto Sans Thai', 'Segoe UI', system-ui, -apple-system,
+    sans-serif;
+  --mt-font-mono: 'JetBrains Mono', 'Cascadia Mono', ui-monospace, monospace;
+
+  --mt-radius-sm: 6px;
+  --mt-radius-md: 10px;
+  --mt-radius-lg: 16px;
+
+  --mt-space-1: 4px;
+  --mt-space-2: 8px;
+  --mt-space-3: 12px;
+  --mt-space-4: 16px;
+  --mt-space-5: 24px;
+  --mt-space-6: 32px;
+
+  --mt-text-xs: 11px;
+  --mt-text-sm: 12px;
+  --mt-text-md: 13px;
+  --mt-text-lg: 15px;
+  --mt-text-xl: 18px;
+
+  --mt-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.25);
+  --mt-shadow-md: 0 8px 24px rgb(0 0 0 / 0.35);
+  --mt-shadow-lg: 0 24px 60px rgb(0 0 0 / 0.45);
+
+  --mt-header-height: 56px;
+  --mt-toolbar-width: 168px;
+  --mt-panel-width: 380px;
+
+  --mt-transition: 140ms ease;
+}
+
+/* Dark is the default — drawings read best on a dark chrome. */
+:root,
+:root[data-theme='dark'] {
+  --mt-bg: #0b1220;
+  --mt-bg-elevated: #111c30;
+  --mt-bg-sunken: #070d18;
+  --mt-surface: #16233a;
+  --mt-surface-hover: #1e2f4c;
+  --mt-border: #24354f;
+  --mt-border-strong: #35507a;
+
+  --mt-text: #e2e8f0;
+  --mt-text-muted: #94a3b8;
+  --mt-text-faint: #64748b;
+
+  --mt-accent: #38bdf8;
+  --mt-accent-strong: #0ea5e9;
+  --mt-accent-contrast: #04121f;
+  --mt-success: #4ade80;
+  --mt-warning: #fbbf24;
+  --mt-danger: #f87171;
+
+  --mt-canvas-bg: #0d1626;
+}
+
+:root[data-theme='light'] {
+  --mt-bg: #f1f5f9;
+  --mt-bg-elevated: #ffffff;
+  --mt-bg-sunken: #e2e8f0;
+  --mt-surface: #ffffff;
+  --mt-surface-hover: #eef2f7;
+  --mt-border: #d8e0ea;
+  --mt-border-strong: #b6c4d6;
+
+  --mt-text: #0f172a;
+  --mt-text-muted: #475569;
+  --mt-text-faint: #64748b;
+
+  --mt-accent: #0284c7;
+  --mt-accent-strong: #0369a1;
+  --mt-accent-contrast: #ffffff;
+  --mt-success: #16a34a;
+  --mt-warning: #d97706;
+  --mt-danger: #dc2626;
+
+  --mt-canvas-bg: #e6ebf2;
+}

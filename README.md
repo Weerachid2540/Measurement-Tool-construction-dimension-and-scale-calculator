@@ -1,0 +1,154 @@
+# Measurement Tool — Construction Dimension & Scale Calculator
+
+เครื่องมือวัดขนาดจากแบบก่อสร้างที่ทำงานทั้งหมดในเบราว์เซอร์ (ไม่มีการอัปโหลดไฟล์ขึ้นเซิร์ฟเวอร์)
+วัดความยาว พื้นที่ มุมและความลาด นับจำนวน คำนวณปริมาณวัสดุ แล้วส่งออกเป็น BOQ (Excel / PDF)
+
+## เริ่มใช้งาน
+
+```bash
+npm install
+```
+
+```bash
+npm run dev
+```
+
+| คำสั่ง | ใช้ทำอะไร |
+| --- | --- |
+| `npm run dev` | เปิด dev server (Vite) ที่ http://localhost:5173 |
+| `npm run build` | ตรวจชนิดข้อมูลด้วย `tsc -b` แล้ว build ไปที่ `dist/` |
+| `npm run preview` | เปิดไฟล์ที่ build แล้ว (ใช้ทดสอบ PWA/offline) |
+| `npm run typecheck` | ตรวจ TypeScript อย่างเดียว |
+| `npm run lint` | ESLint |
+
+> PWA (service worker) จะทำงานเฉพาะกับไฟล์ที่ build แล้ว — ทดสอบด้วย `npm run build && npm run preview`
+
+## ฟีเจอร์
+
+### เปิดไฟล์และตั้งมาตราส่วน
+- รองรับ **PDF** (หลายหน้า), **JPG / PNG / WEBP** และโมเดล **OBJ / GLB / GLTF**
+- PDF จะได้ค่า *pixel ต่อมิลลิเมตรบนกระดาษ* อย่างแม่นยำจากตัว render เอง จึงพร้อมวัดทันที
+- รูปภาพ/ไฟล์สแกน ให้ใช้เครื่องมือ **Calibrate (K)** ลากทับระยะที่ทราบค่า แล้วกรอกความยาวจริง
+- มาตราส่วนสำเร็จรูป 1:1 ถึง 1:1000 และแบบกำหนดเอง
+
+### เครื่องมือวัด 2D (Konva.js)
+| เครื่องมือ | คีย์ | ได้ค่าอะไร |
+| --- | --- | --- |
+| Line | `L` | ความยาว, มุมเอียง, ความลาด %, ระยะราบ/ดิ่ง |
+| Polyline | `P` | ความยาวรวม, จำนวนช่วง |
+| Rectangle | `R` | พื้นที่, กว้าง × ยาว, เส้นรอบรูป |
+| Polygon | `G` | พื้นที่ (shoelace), เส้นรอบรูป |
+| Circle | `C` | พื้นที่, รัศมี, เส้นผ่านศูนย์กลาง, เส้นรอบวง |
+| Angle | `A` | มุม, ความลาด %, ความยาวแขนทั้งสอง |
+| Count | `N` | จำนวนจุด |
+
+- กริดตามระยะจริง (เช่น ทุก 1 ม.) พร้อมตัวเลือกสแนป
+- สแนปเข้าจุดของรูปที่วาดไว้แล้ว และล็อกมุม 0/45/90° ด้วย `Shift`
+- แก้ไขได้: ลากจุดยอด, เปลี่ยนสี, ซ่อน/ล็อก, ทำสำเนา
+- Undo / Redo (`Ctrl+Z` / `Ctrl+Y`) ย้อนได้ 60 ขั้น
+- แยกรายการวัดตามหน้าของ PDF
+
+### ปริมาณวัสดุ
+กำหนดวัสดุให้แต่ละรายการในแท็บ **คุณสมบัติ** แล้วโปรแกรมจะคำนวณให้:
+
+| วัสดุ | สูตร | หน่วย |
+| --- | --- | --- |
+| คอนกรีต | พื้นที่ × ความหนา หรือ ยาว × กว้าง × ลึก | m³ (+ น้ำหนักที่ 2,400 kg/m³) |
+| เหล็กเสริม | ยาว × จำนวนเส้น × D²/162.2 | kg |
+| ไม้แบบ | พื้นที่ หรือ ยาว × สูง × จำนวนด้าน | m² |
+| งานก่อ / ตกแต่งผิว | พื้นที่ | m² |
+| งานดิน | พื้นที่ × ความลึก | m³ |
+
+รองรับเปอร์เซ็นต์เผื่อเสียหายและราคาต่อหน่วย
+
+### ส่งออก BOQ
+- **Excel (.xlsx)** — 3 ชีต: `BOQ`, `Summary`, `Measurements` พร้อมหัวตาราง จัดรูปแบบตัวเลข และ auto-filter
+- **PDF** — ตาราง BOQ + สรุปตามหมวดงาน และแนบภาพแบบที่มาร์กอัปไว้ได้
+- **ประวัติ** ส่งออกเป็น JSON (สำรอง/นำเข้า) หรือ Excel
+
+#### ฟอนต์ไทยใน PDF
+jsPDF ไม่มีฟอนต์ไทยมาให้ หากต้องการข้อความไทยในไฟล์ PDF ให้วางไฟล์ฟอนต์ไว้ที่:
+
+```
+public/fonts/Sarabun-Regular.ttf
+```
+
+โปรแกรมจะตรวจพบและใช้งานอัตโนมัติ ถ้าไม่มีไฟล์นี้จะถอยไปใช้ Helvetica (ข้อความอังกฤษ/ตัวเลขยังปกติ)
+ดาวน์โหลด Sarabun ได้จาก Google Fonts (สัญญาอนุญาต OFL)
+
+### ประวัติการวัด
+- บันทึกลง **IndexedDB** ในเครื่อง พร้อมภาพตัวอย่าง มาตราส่วน และรายการวัดทั้งหมด
+- ค้นหาด้วยชื่อ/โครงการ/ไฟล์/แท็ก กรองตามชนิดไฟล์และช่วงวันที่ เรียงได้หลายแบบ
+- เปิดงานเก่ากลับมาแก้ไข ลบ หรือส่งออกได้
+
+> เปิดงานเก่าแล้วรายการวัดจะกลับมาครบ แต่ตัวไฟล์แบบไม่ได้ถูกเก็บไว้ ให้เปิดไฟล์เดิมอีกครั้งเพื่อดูภาพประกอบ
+
+### 3D (ตัวเลือกเสริม)
+- โหลด OBJ / GLB / GLTF ด้วย Three.js (โหลดแบบ lazy จึงไม่ถ่วง bundle หลัก)
+- วัดระยะจุดต่อจุดบนโมเดลด้วย raycasting
+- ตัดหน้าตัด (section cut) ด้วย clipping plane
+- ตั้งค่า "1 หน่วยโมเดล = กี่เมตร" เพื่อแปลงเป็นหน่วยจริง
+
+## คีย์ลัด
+
+กด `?` ในแอปเพื่อดูรายการเต็ม — ที่ใช้บ่อย:
+
+```
+V เลือก · H/Space เลื่อนภาพ · L ความยาว · G พื้นที่ · A มุม · K ปรับเทียบ
+Enter จบรูป · Esc ยกเลิก · Backspace ลบจุดล่าสุด · Delete ลบรายการ
+Ctrl+Z / Ctrl+Y ย้อน/ทำซ้ำ · Ctrl+S บันทึก · +/- ซูม · 0 พอดีหน้าจอ
+```
+
+## โครงสร้างโปรเจกต์
+
+```
+src/
+├─ components/
+│  ├─ Canvas/        MeasureCanvas (Konva Stage), MeasurementShape, DraftShape, GridLayer
+│  ├─ Toolbar/       ToolBar, CanvasToolbar, ScaleControl
+│  ├─ Panels/        SidePanel + MeasurementList, PropertiesPanel, BoqPanel, HistoryPanel
+│  ├─ Modals/        CalibrateModal, ShortcutsModal
+│  ├─ FileUpload/    FileDropzone
+│  ├─ Viewer3D/      Viewer3D (Three.js, lazy)
+│  ├─ Layout/        Header, StatusBar
+│  └─ common/        Button, Field, Modal, Icon, Toasts
+├─ hooks/            useCanvasInteraction, useDocumentLoader, useSessionPersistence,
+│                    useKeyboardShortcuts, useMeasurementResults, useElementSize, useHtmlImage
+├─ store/            useMeasurementStore (Zustand + undo/redo), useSessionStore, useUiStore
+├─ types/            geometry, scale, canvas, measurement, material, document, session, boq
+├─ utils/            geometry, scale, measurement, materials, boq, format, colors,
+│                    db (IndexedDB), fileLoader (pdf.js), export/{excel,pdf,download}
+└─ styles/           tokens.css (design tokens), base, layout, components
+```
+
+## หลักการคำนวณมาตราส่วน
+
+ทุกอย่างวิ่งผ่านสมการเดียว:
+
+```
+ระยะจริง (มม.) = พิกเซล ÷ pxPerPaperMm × ratio
+```
+
+- `pxPerPaperMm` = จำนวนพิกเซลของภาพต่อ 1 มม. บน **กระดาษ**
+  - PDF: คำนวณตรงจาก render scale (`scale × 72 ÷ 25.4`)
+  - รูปภาพ: เริ่มต้นที่ 96 DPI แล้วให้ผู้ใช้ปรับเทียบ
+- `ratio` = ตัวหารของมาตราส่วน เช่น 1:100 → 100
+- พื้นที่ใช้กำลังสองของตัวคูณเชิงเส้น
+
+ผลลัพธ์ทั้งหมดคำนวณสดจากจุดที่เก็บไว้ ไม่ได้ cache ค่าไว้ในตัวรายการ **การเปลี่ยนมาตราส่วนจึงอัปเดตทั้งแบบทันที**
+
+## การนำไปต่อยอด / ปรับดีไซน์
+
+- สี ระยะห่าง มุมโค้ง ฟอนต์ ทั้งหมดอยู่ใน `src/styles/tokens.css` — เปลี่ยนที่เดียวได้ทั้งแอป (มีธีมสว่าง/มืด)
+- ตรรกะการคำนวณเป็นฟังก์ชันบริสุทธิ์ใน `src/utils/` ทดสอบหรือนำไปใช้ซ้ำได้โดยไม่ต้องพึ่ง React
+- state แยกเป็น 3 store ตามหน้าที่ (การวัด / ประวัติ / UI) เพิ่มฟีเจอร์ได้โดยไม่กระทบกัน
+- ชนิดข้อมูลกลางอยู่ใน `src/types/` — เพิ่มเครื่องมือใหม่เริ่มจากที่นี่แล้ว TypeScript จะชี้จุดที่ต้องแก้ให้เอง
+
+## Tech stack
+
+React 18 · TypeScript (strict) · Vite 5 · Konva + react-konva · Zustand · pdf.js · Three.js ·
+ExcelJS · jsPDF + autoTable · idb (IndexedDB) · vite-plugin-pwa
+
+## รองรับเบราว์เซอร์
+
+Chrome / Edge, Firefox, Safari รุ่นล่าสุด (ต้องมี IndexedDB, ResizeObserver, Pointer Events)
