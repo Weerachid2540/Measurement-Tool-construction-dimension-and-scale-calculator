@@ -5,6 +5,14 @@ import { formatDateTime } from '@/utils/format';
 /** Release notes, newest first. Keep in step with CHANGELOG.md. */
 const RELEASES: readonly { version: string; date: string; changes: string[] }[] = [
   {
+    version: '1.3.0',
+    date: '2026-08-08',
+    changes: [
+      'แสดงเลขเวอร์ชันและวันที่ build ในแอป พร้อมหน้าต่างประวัติการเปลี่ยนแปลง',
+      'ตรวจหาเวอร์ชันใหม่อัตโนมัติทุกชั่วโมงและรีเฟรชให้เอง',
+    ],
+  },
+  {
     version: '1.2.0',
     date: '2026-08-08',
     changes: [
