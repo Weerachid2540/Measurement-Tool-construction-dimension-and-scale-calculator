@@ -16,5 +16,18 @@ createRoot(container).render(
   </StrictMode>,
 );
 
-// Offline support: pick up a new build on the next visit without prompting.
-registerSW({ immediate: true });
+/*
+ * Offline support. `autoUpdate` installs a new build in the background; the reload
+ * below is what actually swaps the running page over to it, so a team member who
+ * leaves the tab open still lands on the current version.
+ */
+registerSW({
+  immediate: true,
+  onRegisteredSW(_url, registration) {
+    // Check hourly — long enough not to be chatty, short enough for a work day.
+    if (registration) window.setInterval(() => void registration.update(), 60 * 60 * 1000);
+  },
+  onNeedRefresh() {
+    window.location.reload();
+  },
+});

@@ -164,6 +164,30 @@ src/
 React 18 · TypeScript (strict) · Vite 5 · Konva + react-konva · Zustand · pdf.js · Three.js ·
 ExcelJS · jsPDF + autoTable · idb (IndexedDB) · vite-plugin-pwa
 
+## การออกเวอร์ชัน
+
+เลขเวอร์ชันอยู่ที่ `package.json` ที่เดียว แล้ว Vite ฉีดเข้าแอปตอน build ผู้ใช้เห็นเป็นป้าย `v1.2.0`
+มุมซ้ายบน คลิกแล้วจะเห็นวันที่ build และประวัติการเปลี่ยนแปลง
+
+ขั้นตอนตอนจะปล่อยเวอร์ชันใหม่:
+
+```bash
+npm version minor --no-git-tag-version
+```
+
+| เมื่อไหร่ใช้อะไร | คำสั่ง | ตัวอย่าง |
+| --- | --- | --- |
+| แก้บั๊ก ไม่มีฟีเจอร์ใหม่ | `npm version patch --no-git-tag-version` | 1.2.0 → 1.2.1 |
+| เพิ่มฟีเจอร์ใหม่ | `npm version minor --no-git-tag-version` | 1.2.0 → 1.3.0 |
+| เปลี่ยนโครงสร้างใหญ่ / ใช้ของเดิมไม่ได้ | `npm version major --no-git-tag-version` | 1.2.0 → 2.0.0 |
+
+จากนั้นบันทึกสิ่งที่เปลี่ยนลง [CHANGELOG.md](CHANGELOG.md) และเพิ่มรายการใน `RELEASES`
+ที่ [AboutModal.tsx](src/components/Modals/AboutModal.tsx) แล้ว commit + push — GitHub Actions
+จะ build และ deploy ให้เอง
+
+> Service worker จะตรวจหาเวอร์ชันใหม่ทุกชั่วโมงและรีเฟรชหน้าให้อัตโนมัติ คนที่เปิดแท็บค้างไว้
+> จึงได้ตัวล่าสุดโดยไม่ต้องกดอะไร
+
 ## รองรับเบราว์เซอร์
 
 Chrome / Edge, Firefox, Safari รุ่นล่าสุด (ต้องมี IndexedDB, ResizeObserver, Pointer Events)

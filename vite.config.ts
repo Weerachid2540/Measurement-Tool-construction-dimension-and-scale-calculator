@@ -1,7 +1,13 @@
+import { readFileSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+
+// package.json is the single source of truth for the version shown in the app.
+const pkg = JSON.parse(
+  readFileSync(new URL('./package.json', import.meta.url), 'utf-8'),
+) as { version: string };
 
 // GitHub Pages serves the app from /<repo>/ rather than the domain root.
 // The deploy workflow sets BASE_PATH; everywhere else this stays '/'.
@@ -45,6 +51,12 @@ export default defineConfig({
       // avoids pulling `stream`/`buffer` polyfills into the app.
       exceljs: 'exceljs/dist/exceljs.min.js',
     },
+  },
+
+  // Baked in at build time so the running app can report exactly which build it is.
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __BUILD_DATE__: JSON.stringify(new Date().toISOString()),
   },
 
   // pdf.js ships its worker as an ESM file that must not be pre-bundled.

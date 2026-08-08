@@ -20,7 +20,17 @@ export function Header() {
       <div className="mt-header__brand">
         <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" width={28} height={28} />
         <div>
-          <strong>Measurement Tool</strong>
+          <strong>
+            Measurement Tool
+            <button
+              type="button"
+              className="mt-version"
+              onClick={() => openModal('about')}
+              title="ดูรายละเอียดเวอร์ชัน"
+            >
+              v{__APP_VERSION__}
+            </button>
+          </strong>
           <span>Construction Dimension &amp; Scale Calculator</span>
         </div>
       </div>

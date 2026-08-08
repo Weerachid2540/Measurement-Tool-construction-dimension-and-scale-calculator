@@ -19,6 +19,7 @@ export type ModalId =
   | 'boqOptions'
   | 'shortcuts'
   | 'saveSymbol'
+  | 'about'
   | null;
 
 interface UiState {
