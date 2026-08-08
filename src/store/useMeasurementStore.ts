@@ -202,8 +202,11 @@ export const useMeasurementStore = create<MeasurementStore>((set, get) => ({
   commitDraft: () => {
     const state = get();
     const tool = state.activeTool;
-    if (tool === 'select' || tool === 'pan' || tool === 'calibrate') return null;
-    const type = tool as MeasurementType;
+    // autoCount commits through its own flow, not the draft.
+    if (tool === 'select' || tool === 'pan' || tool === 'calibrate' || tool === 'autoCount') {
+      return null;
+    }
+    const type: MeasurementType = tool;
     // Finishing with a double-click leaves a duplicate of the last point behind.
     const points = dedupeConsecutive(state.draft);
     if (!isComplete(type, points)) {

@@ -3,7 +3,7 @@ import type Konva from 'konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import type { Measurement, MeasurementType, Point, ToolId } from '@/types';
 import { ZOOM_LIMITS } from '@/types';
-import { useMeasurementStore, useUiStore } from '@/store';
+import { useAutoCountStore, useMeasurementStore, useUiStore } from '@/store';
 import { nearestPoint, snapToAngle } from '@/utils/geometry';
 import { isComplete, isFull, outlinePoints } from '@/utils/measurement';
 import { realMmToPx, toMillimetres } from '@/utils/scale';
@@ -37,8 +37,11 @@ export interface CanvasInteraction {
 export function useCanvasInteraction(
   stageRef: RefObject<Konva.Stage>,
   measurementsOnPage: Measurement[],
+  /** Called when the auto-count marquee is released. */
+  onMarqueeEnd?: () => void,
 ): CanvasInteraction {
   const pressOrigin = useRef<{ x: number; y: number } | null>(null);
+  const marqueeActive = useRef(false);
   const openModal = useUiStore((s) => s.openModal);
 
   const readPointer = useCallback((): Point | null => {
@@ -84,8 +87,9 @@ export function useCanvasInteraction(
   const finishDraft = useCallback(() => {
     const state = useMeasurementStore.getState();
     if (state.activeTool === 'calibrate' || state.activeTool === 'select') return;
-    if (!DRAWING_TOOLS.includes(state.activeTool)) return;
-    const type = state.activeTool as MeasurementType;
+    const active = state.activeTool;
+    if (!DRAWING_TOOLS.includes(active)) return;
+    const type = active as MeasurementType;
     if (isComplete(type, state.draft)) state.commitDraft();
     else state.cancelDraft();
   }, []);
@@ -95,7 +99,8 @@ export function useCanvasInteraction(
       const state = useMeasurementStore.getState();
       const tool = state.activeTool;
 
-      if (tool === 'pan') return;
+      // Panning and auto-count are handled by drag, not by click.
+      if (tool === 'pan' || tool === 'autoCount') return;
 
       if (tool === 'select') {
         // Clicking bare canvas (the stage or the drawing image) clears the selection.
@@ -124,15 +129,34 @@ export function useCanvasInteraction(
     [openModal],
   );
 
-  const onPointerDown = useCallback((e: KonvaEventObject<PointerEvent>) => {
-    const stage = e.target.getStage();
-    const pointer = stage?.getPointerPosition();
-    pressOrigin.current = pointer ? { x: pointer.x, y: pointer.y } : null;
-  }, []);
+  const onPointerDown = useCallback(
+    (e: KonvaEventObject<PointerEvent>) => {
+      const stage = e.target.getStage();
+      const pointer = stage?.getPointerPosition();
+      pressOrigin.current = pointer ? { x: pointer.x, y: pointer.y } : null;
+
+      // Auto-count is the one tool that draws by dragging a marquee.
+      if (useMeasurementStore.getState().activeTool !== 'autoCount') return;
+      if (useAutoCountStore.getState().stage !== 'selecting') return;
+      const raw = readPointer();
+      if (raw) {
+        marqueeActive.current = true;
+        useAutoCountStore.getState().setDrag(raw, raw);
+      }
+    },
+    [readPointer],
+  );
 
   const onPointerMove = useCallback(() => {
     const raw = readPointer();
     if (!raw) return;
+
+    if (marqueeActive.current) {
+      const { dragStart, setDrag } = useAutoCountStore.getState();
+      setDrag(dragStart, raw);
+      return;
+    }
+
     const shiftKey = shiftPressed();
     useMeasurementStore.getState().setCursor(snapPoint(raw, shiftKey));
   }, [readPointer, snapPoint]);
@@ -144,6 +168,12 @@ export function useCanvasInteraction(
       const origin = pressOrigin.current;
       pressOrigin.current = null;
 
+      if (marqueeActive.current) {
+        marqueeActive.current = false;
+        onMarqueeEnd?.();
+        return;
+      }
+
       // A drag (panning) should never place a point.
       if (origin && pointer && Math.hypot(pointer.x - origin.x, pointer.y - origin.y) > CLICK_SLOP) {
         return;
@@ -153,7 +183,7 @@ export function useCanvasInteraction(
       if (!raw) return;
       handleClick(snapPoint(raw, e.evt.shiftKey), e.target);
     },
-    [handleClick, readPointer, snapPoint],
+    [handleClick, onMarqueeEnd, readPointer, snapPoint],
   );
 
   const onPointerLeave = useCallback(() => {

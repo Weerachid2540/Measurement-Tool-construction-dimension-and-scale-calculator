@@ -3,11 +3,18 @@ import { Image as KonvaImage, Layer, Stage } from 'react-konva';
 import type Konva from 'konva';
 import type { ToolId } from '@/types';
 import { useMeasurementStore, useUiStore } from '@/store';
-import { useCanvasInteraction, useElementSize, useHtmlImage, useMeasurementResults } from '@/hooks';
+import {
+  useAutoCount,
+  useCanvasInteraction,
+  useElementSize,
+  useHtmlImage,
+  useMeasurementResults,
+} from '@/hooks';
 import { MeasurementShape } from './MeasurementShape';
 import { DraftShape } from './DraftShape';
 import { GridLayer } from './GridLayer';
-import { registerStage } from './stageRegistry';
+import { AutoCountOverlay } from './AutoCountOverlay';
+import { registerDrawingImage, registerStage } from './stageRegistry';
 
 const CURSOR_BY_TOOL: Record<ToolId, string> = {
   select: 'default',
@@ -19,6 +26,7 @@ const CURSOR_BY_TOOL: Record<ToolId, string> = {
   circle: 'crosshair',
   angle: 'crosshair',
   count: 'copy',
+  autoCount: 'crosshair',
   calibrate: 'crosshair',
 };
 
@@ -53,12 +61,18 @@ export function MeasureCanvas() {
   const results = useMeasurementResults(measurements, scale);
   const [image] = useHtmlImage(page?.src);
 
-  const interaction = useCanvasInteraction(stageRef, measurements);
+  const { commitSelection } = useAutoCount();
+  const interaction = useCanvasInteraction(stageRef, measurements, commitSelection);
 
   useEffect(() => {
     registerStage(stageRef.current);
     return () => registerStage(null);
   }, [page]);
+
+  useEffect(() => {
+    registerDrawingImage(image);
+    return () => registerDrawingImage(null);
+  }, [image]);
 
   // Fit the sheet to the viewport whenever a new page is opened.
   const pageKey = page ? `${page.pageNumber}:${page.src.length}` : '';
@@ -151,6 +165,8 @@ export function MeasureCanvas() {
             scale={scale}
             color={activeColor}
           />
+
+          <AutoCountOverlay zoom={view.zoom} pageSize={page} />
         </Layer>
       </Stage>
 

@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
 import type { ToolId } from '@/types';
-import { useMeasurementStore, useUiStore } from '@/store';
+import { useAutoCountStore, useMeasurementStore, useUiStore } from '@/store';
 import { isComplete } from '@/utils/measurement';
-import type { MeasurementType } from '@/types';
 
 export const SHORTCUTS: readonly { keys: string; description: string }[] = [
   { keys: 'V', description: 'เครื่องมือเลือก (Select)' },
@@ -14,6 +13,7 @@ export const SHORTCUTS: readonly { keys: string; description: string }[] = [
   { keys: 'C', description: 'วงกลม (Circle)' },
   { keys: 'A', description: 'มุม/ความลาด (Angle)' },
   { keys: 'N', description: 'นับจำนวน (Count)' },
+  { keys: 'M', description: 'นับสัญลักษณ์อัตโนมัติ (Auto-count)' },
   { keys: 'K', description: 'ปรับเทียบมาตราส่วน (Calibrate)' },
   { keys: 'Enter', description: 'จบรูปที่กำลังวาด' },
   { keys: 'Esc', description: 'ยกเลิกรูปที่กำลังวาด / ยกเลิกการเลือก' },
@@ -39,6 +39,7 @@ const TOOL_KEYS: Record<string, ToolId> = {
   c: 'circle',
   a: 'angle',
   n: 'count',
+  m: 'autoCount',
   k: 'calibrate',
 };
 
@@ -97,16 +98,26 @@ export function useKeyboardShortcuts({ onSave, onFitToScreen }: Options): void {
       }
 
       switch (event.key) {
-        case 'Escape':
+        case 'Escape': {
+          const autoCount = useAutoCountStore.getState();
           if (store.draft.length > 0) store.cancelDraft();
           else if (ui.modal) ui.closeModal();
+          else if (autoCount.stage !== 'idle') autoCount.reset();
           else store.clearSelection();
           return;
+        }
         case 'Enter': {
           if (store.draft.length === 0) return;
           const tool = store.activeTool;
-          if (tool === 'select' || tool === 'pan' || tool === 'calibrate') return;
-          if (isComplete(tool as MeasurementType, store.draft)) store.commitDraft();
+          if (
+            tool === 'select' ||
+            tool === 'pan' ||
+            tool === 'calibrate' ||
+            tool === 'autoCount'
+          ) {
+            return;
+          }
+          if (isComplete(tool, store.draft)) store.commitDraft();
           return;
         }
         case 'Backspace':
@@ -144,7 +155,15 @@ export function useKeyboardShortcuts({ onSave, onFitToScreen }: Options): void {
       }
 
       const tool = TOOL_KEYS[key];
-      if (tool) useMeasurementStore.getState().setTool(tool);
+      if (!tool) return;
+      useMeasurementStore.getState().setTool(tool);
+      // Auto-count is driven from its panel, so bring it up with the tool.
+      if (tool === 'autoCount') {
+        useAutoCountStore.getState().beginSelection();
+        ui.setPanelTab('autoCount');
+      } else {
+        useAutoCountStore.getState().reset();
+      }
     };
 
     const onKeyUp = (event: KeyboardEvent) => {

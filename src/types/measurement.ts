@@ -13,10 +13,11 @@ export type ToolId =
   | 'circle'
   | 'angle'
   | 'count'
+  | 'autoCount'
   | 'calibrate';
 
-/** Tools that produce a persisted measurement. */
-export type MeasurementType = Exclude<ToolId, 'select' | 'pan' | 'calibrate'>;
+/** Tools that produce a persisted measurement. `autoCount` produces a `count`. */
+export type MeasurementType = Exclude<ToolId, 'select' | 'pan' | 'calibrate' | 'autoCount'>;
 
 export const MEASUREMENT_TYPES: readonly MeasurementType[] = [
   'line',

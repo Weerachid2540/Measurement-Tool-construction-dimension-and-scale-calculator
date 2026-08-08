@@ -1,5 +1,5 @@
 import type { ToolId } from '@/types';
-import { useMeasurementStore } from '@/store';
+import { useAutoCountStore, useMeasurementStore, useUiStore } from '@/store';
 import { Icon, type IconName } from '@/components/common';
 import { PALETTE } from '@/utils/colors';
 
@@ -23,6 +23,7 @@ const TOOL_GROUPS: ToolDefinition[][] = [
     { id: 'circle', icon: 'circle', label: 'วงกลม', shortcut: 'C' },
     { id: 'angle', icon: 'angle', label: 'มุม / ความลาด', shortcut: 'A' },
     { id: 'count', icon: 'count', label: 'นับจำนวน', shortcut: 'N' },
+    { id: 'autoCount', icon: 'search', label: 'นับสัญลักษณ์อัตโนมัติ', shortcut: 'M' },
   ],
   [{ id: 'calibrate', icon: 'calibrate', label: 'ปรับเทียบมาตราส่วน', shortcut: 'K' }],
 ];
@@ -33,6 +34,20 @@ export function ToolBar() {
   const activeColor = useMeasurementStore((s) => s.activeColor);
   const setActiveColor = useMeasurementStore((s) => s.setActiveColor);
   const hasDocument = useMeasurementStore((s) => s.page !== null);
+  const beginSelection = useAutoCountStore((s) => s.beginSelection);
+  const resetAutoCount = useAutoCountStore((s) => s.reset);
+  const setPanelTab = useUiStore((s) => s.setPanelTab);
+
+  // Auto-count needs its panel open to be usable, so picking the tool opens it.
+  const selectTool = (id: ToolId) => {
+    setTool(id);
+    if (id === 'autoCount') {
+      beginSelection();
+      setPanelTab('autoCount');
+    } else {
+      resetAutoCount();
+    }
+  };
 
   return (
     <nav className="mt-toolbar" aria-label="เครื่องมือวัด">
@@ -43,7 +58,7 @@ export function ToolBar() {
               key={tool.id}
               type="button"
               className={`mt-tool ${activeTool === tool.id ? 'is-active' : ''}`}
-              onClick={() => setTool(tool.id)}
+              onClick={() => selectTool(tool.id)}
               disabled={!hasDocument && tool.id !== 'select'}
               title={`${tool.label} (${tool.shortcut})`}
               aria-pressed={activeTool === tool.id}

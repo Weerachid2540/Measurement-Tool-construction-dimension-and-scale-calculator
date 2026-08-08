@@ -8,6 +8,13 @@ export {
 } from './useMeasurementStore';
 export { useSessionStore, selectFilteredSessions, type SessionStore } from './useSessionStore';
 export {
+  useAutoCountStore,
+  selectAcceptedPoints,
+  selectAcceptedCount,
+  type AutoCountStore,
+  type AutoCountStage,
+} from './useAutoCountStore';
+export {
   useUiStore,
   type UiStore,
   type PanelTab,

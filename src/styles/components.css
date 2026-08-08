@@ -506,6 +506,116 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* -------------------------------- auto count -------------------------------- */
+
+.mt-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mt-space-2);
+  counter-reset: step;
+}
+
+.mt-steps li {
+  position: relative;
+  padding-left: 28px;
+  font-size: var(--mt-text-sm);
+  color: var(--mt-text-faint);
+  line-height: 1.5;
+}
+
+.mt-steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid var(--mt-border-strong);
+  font-size: var(--mt-text-xs);
+}
+
+.mt-steps li.is-active {
+  color: var(--mt-text);
+}
+
+.mt-steps li.is-active::before {
+  background: var(--mt-accent);
+  border-color: var(--mt-accent);
+  color: var(--mt-accent-contrast);
+  font-weight: 700;
+}
+
+.mt-steps li.is-done::before {
+  background: color-mix(in srgb, var(--mt-success) 25%, transparent);
+  border-color: var(--mt-success);
+  color: var(--mt-success);
+}
+
+.mt-autocount__template {
+  display: flex;
+  align-items: center;
+  gap: var(--mt-space-3);
+}
+
+.mt-autocount__template img {
+  max-width: 96px;
+  max-height: 96px;
+  border-radius: var(--mt-radius-sm);
+  border: 1px solid var(--mt-border);
+  background: #ffffff;
+  padding: 4px;
+}
+
+.mt-autocount__progress {
+  display: flex;
+  align-items: center;
+  gap: var(--mt-space-3);
+  font-size: var(--mt-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.mt-progress {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--mt-bg-sunken);
+  overflow: hidden;
+}
+
+.mt-progress__bar {
+  height: 100%;
+  background: var(--mt-accent);
+  transition: width 120ms linear;
+}
+
+.mt-hint-box {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--mt-space-2);
+  padding: var(--mt-space-2) var(--mt-space-3);
+  border-radius: var(--mt-radius-md);
+  background: color-mix(in srgb, var(--mt-accent) 10%, transparent);
+  color: var(--mt-text-muted);
+  font-size: var(--mt-text-sm);
+  line-height: 1.5;
+}
+
+.mt-hint-box svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--mt-accent);
+}
+
+.mt-error {
+  font-size: var(--mt-text-sm);
+  color: var(--mt-danger);
+}
+
 /* ----------------------------------- table ---------------------------------- */
 
 .mt-table-wrap {

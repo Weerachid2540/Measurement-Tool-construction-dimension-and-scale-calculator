@@ -1,5 +1,5 @@
 import { Circle, Group, Label, Line, Rect, Tag, Text } from 'react-konva';
-import type { Point, ScaleSettings, ToolId } from '@/types';
+import type { MeasurementType, Point, ScaleSettings, ToolId } from '@/types';
 import { distance, flattenPoints, polygonArea, polylineLength } from '@/utils/geometry';
 import { mm2ToM2, mmToM, pxAreaToRealMm2, pxToRealMm } from '@/utils/scale';
 import { formatNumber } from '@/utils/format';
@@ -25,7 +25,8 @@ interface DraftShapeProps {
 /** The rubber-band preview of the shape currently being drawn, with a live readout. */
 export function DraftShape({ tool, points, cursor, zoom, scale, color }: DraftShapeProps) {
   if (points.length === 0 && !cursor) return null;
-  if (tool === 'select' || tool === 'pan') return null;
+  // Auto-count draws its own marquee in AutoCountOverlay.
+  if (tool === 'select' || tool === 'pan' || tool === 'autoCount') return null;
 
   const stroke = tool === 'calibrate' ? '#f97316' : (color ?? defaultColorFor(drawTypeOf(tool)));
   const preview = cursor ? [...points, cursor] : points;
@@ -152,5 +153,7 @@ function liveReadout(tool: ToolId, preview: Point[], scale: ScaleSettings): stri
   return `${formatNumber(lengthM, 3)} m${suffix}`;
 }
 
-const drawTypeOf = (tool: ToolId) =>
-  tool === 'calibrate' || tool === 'select' || tool === 'pan' ? 'line' : tool;
+const drawTypeOf = (tool: ToolId): MeasurementType =>
+  tool === 'calibrate' || tool === 'select' || tool === 'pan' || tool === 'autoCount'
+    ? 'line'
+    : tool;

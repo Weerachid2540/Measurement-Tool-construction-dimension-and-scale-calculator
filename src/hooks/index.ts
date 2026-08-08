@@ -5,3 +5,4 @@ export { useCanvasInteraction, type CanvasInteraction } from './useCanvasInterac
 export { useKeyboardShortcuts, SHORTCUTS } from './useKeyboardShortcuts';
 export { useSessionPersistence } from './useSessionPersistence';
 export { useDocumentLoader } from './useDocumentLoader';
+export { useAutoCount } from './useAutoCount';

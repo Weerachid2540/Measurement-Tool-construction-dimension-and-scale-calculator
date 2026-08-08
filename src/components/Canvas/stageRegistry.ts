@@ -6,10 +6,21 @@ import type Konva from 'konva';
  * one-directional instead of threading a ref through the whole tree.
  */
 let stage: Konva.Stage | null = null;
+let drawingImage: HTMLImageElement | null = null;
 
 export const registerStage = (instance: Konva.Stage | null): void => {
   stage = instance;
 };
+
+/**
+ * The raster of the current page. Symbol auto-count reads its pixels directly,
+ * which is cheaper and sharper than re-rendering the stage to sample it.
+ */
+export const registerDrawingImage = (image: HTMLImageElement | null): void => {
+  drawingImage = image;
+};
+
+export const getDrawingImage = (): HTMLImageElement | null => drawingImage;
 
 export function getStageSnapshot(pixelRatio = 2): string | undefined {
   if (!stage) return undefined;

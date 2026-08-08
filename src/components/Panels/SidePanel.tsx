@@ -5,10 +5,12 @@ import { MeasurementList } from './MeasurementList';
 import { PropertiesPanel } from './PropertiesPanel';
 import { BoqPanel } from './BoqPanel';
 import { HistoryPanel } from './HistoryPanel';
+import { AutoCountPanel } from './AutoCountPanel';
 
 const TABS: { id: PanelTab; label: string; icon: IconName }[] = [
   { id: 'measurements', label: 'รายการวัด', icon: 'list' },
   { id: 'properties', label: 'คุณสมบัติ', icon: 'settings' },
+  { id: 'autoCount', label: 'นับอัตโนมัติ', icon: 'count' },
   { id: 'boq', label: 'BOQ', icon: 'table' },
   { id: 'history', label: 'ประวัติ', icon: 'history' },
 ];
@@ -50,6 +52,7 @@ export function SidePanel() {
         <div className="mt-panel__content" role="tabpanel">
           {panelTab === 'measurements' && <MeasurementList />}
           {panelTab === 'properties' && <PropertiesPanel />}
+          {panelTab === 'autoCount' && <AutoCountPanel />}
           {panelTab === 'boq' && <BoqPanel />}
           {panelTab === 'history' && <HistoryPanel />}
         </div>
