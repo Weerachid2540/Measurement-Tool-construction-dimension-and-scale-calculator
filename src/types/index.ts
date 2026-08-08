@@ -5,4 +5,5 @@ export * from './material';
 export * from './measurement';
 export * from './document';
 export * from './session';
+export * from './symbolLibrary';
 export * from './boq';

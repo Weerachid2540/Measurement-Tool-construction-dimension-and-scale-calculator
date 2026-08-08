@@ -18,7 +18,10 @@ export interface SymbolMatch {
 }
 
 export interface SymbolSearchOptions {
-  /** Minimum NCC score to accept, 0–1. 0.8 is a good default for line art. */
+  /**
+   * Minimum shape score to accept, 0–1. Applied when filtering results rather than
+   * during the scan, so it can be re-tuned without searching again.
+   */
   threshold: number;
   /** Also try the template rotated by 90/180/270°. */
   matchRotations: boolean;
@@ -27,9 +30,11 @@ export interface SymbolSearchOptions {
 }
 
 export const DEFAULT_SEARCH_OPTIONS: SymbolSearchOptions = {
-  threshold: 0.8,
+  // A clean vector symbol matches its twin at 0.9+ under F₂; 0.75 leaves room for
+  // neighbouring linework before the user tunes it with the slider.
+  threshold: 0.75,
   matchRotations: false,
-  maxResults: 2000,
+  maxResults: 4000,
 };
 
 /** What the worker needs to run a search. Buffers are transferred, not copied. */

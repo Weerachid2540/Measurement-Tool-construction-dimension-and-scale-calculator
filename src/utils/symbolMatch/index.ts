@@ -1,10 +1,11 @@
 import type { BBox } from '@/types';
-import { prepareSearch } from './prepare';
+import { prepareSearch, prepareSearchWithStoredTemplate, type PreparedSearch } from './prepare';
 import type { SearchRequest, SymbolMatch, SymbolSearchOptions, WorkerMessage } from './types';
 
 export type { GrayImage, SymbolMatch, SymbolSearchOptions, SymbolTemplate } from './types';
 export { DEFAULT_SEARCH_OPTIONS } from './types';
-export { normaliseBox, templatePreview, chooseDownscale } from './prepare';
+export { normaliseBox, templatePreview, chooseDownscale, cropToDataUrl } from './prepare';
+export { SEARCH_FLOOR, suggestThreshold } from './matcher';
 
 export interface SearchHandle {
   /** Resolves with the matches, or rejects if the search failed. */
@@ -23,6 +24,33 @@ export interface SearchHandle {
 export function findSymbols(
   image: HTMLImageElement,
   templateBox: BBox,
+  options: SymbolSearchOptions,
+  onProgress?: (percent: number) => void,
+): SearchHandle {
+  return runSearch(() => prepareSearch(image, templateBox), options, onProgress);
+}
+
+/**
+ * Same search, driven by a glyph from the symbol library instead of a live crop.
+ * The stored artwork is rescaled to this sheet's resolution via its size on paper.
+ */
+export function findSymbolsFromLibrary(
+  sheet: HTMLImageElement,
+  glyph: HTMLImageElement,
+  paperSizeMm: { width: number; height: number },
+  sheetPxPerPaperMm: number,
+  options: SymbolSearchOptions,
+  onProgress?: (percent: number) => void,
+): SearchHandle {
+  return runSearch(
+    () => prepareSearchWithStoredTemplate(sheet, glyph, paperSizeMm, sheetPxPerPaperMm),
+    options,
+    onProgress,
+  );
+}
+
+function runSearch(
+  prepare: () => PreparedSearch,
   options: SymbolSearchOptions,
   onProgress?: (percent: number) => void,
 ): SearchHandle {
@@ -57,7 +85,7 @@ export function findSymbols(
 
     let request: SearchRequest;
     try {
-      const prepared = prepareSearch(image, templateBox);
+      const prepared = prepare();
       request = {
         image: prepared.image,
         template: prepared.template,

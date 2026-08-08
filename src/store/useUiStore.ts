@@ -13,7 +13,13 @@ export interface Toast {
   tone: 'info' | 'success' | 'error';
 }
 
-export type ModalId = 'calibrate' | 'saveSession' | 'boqOptions' | 'shortcuts' | null;
+export type ModalId =
+  | 'calibrate'
+  | 'saveSession'
+  | 'boqOptions'
+  | 'shortcuts'
+  | 'saveSymbol'
+  | null;
 
 interface UiState {
   mode: WorkspaceMode;

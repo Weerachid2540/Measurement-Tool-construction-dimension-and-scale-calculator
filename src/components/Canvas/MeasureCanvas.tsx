@@ -61,7 +61,7 @@ export function MeasureCanvas() {
   const results = useMeasurementResults(measurements, scale);
   const [image] = useHtmlImage(page?.src);
 
-  const { commitSelection } = useAutoCount();
+  const { commitSelection, resizeTemplate, finishResize } = useAutoCount();
   const interaction = useCanvasInteraction(stageRef, measurements, commitSelection);
 
   useEffect(() => {
@@ -166,7 +166,12 @@ export function MeasureCanvas() {
             color={activeColor}
           />
 
-          <AutoCountOverlay zoom={view.zoom} pageSize={page} />
+          <AutoCountOverlay
+            zoom={view.zoom}
+            pageSize={page}
+            onTemplateResize={resizeTemplate}
+            onTemplateResizeEnd={finishResize}
+          />
         </Layer>
       </Stage>
 

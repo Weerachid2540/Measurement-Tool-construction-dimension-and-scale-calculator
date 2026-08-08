@@ -11,6 +11,7 @@ import { FileDropzone } from '@/components/FileUpload/FileDropzone';
 import { SidePanel } from '@/components/Panels/SidePanel';
 import { CalibrateModal } from '@/components/Modals/CalibrateModal';
 import { ShortcutsModal } from '@/components/Modals/ShortcutsModal';
+import { SaveSymbolModal } from '@/components/Modals/SaveSymbolModal';
 
 // three.js is a large dependency — keep it out of the initial bundle.
 const Viewer3D = lazy(() =>
@@ -61,6 +62,7 @@ export default function App() {
 
       <CalibrateModal />
       <ShortcutsModal />
+      <SaveSymbolModal />
       <Toasts />
     </div>
   );

@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-import { findMatches } from './ncc';
+import { findMatches } from './matcher';
 import type { SearchRequest, WorkerMessage } from './types';
 
 /**

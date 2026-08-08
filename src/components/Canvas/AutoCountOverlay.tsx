@@ -1,7 +1,8 @@
 import { Circle, Group, Label, Rect, Tag, Text } from 'react-konva';
-import type { Size } from '@/types';
+import type { BBox, Size } from '@/types';
 import { useAutoCountStore } from '@/store';
 import { normaliseBox } from '@/utils/symbolMatch';
+import { TemplateBoxEditor } from './TemplateBoxEditor';
 
 const TEMPLATE_COLOR = '#f97316';
 const ACCEPTED_COLOR = '#4ade80';
@@ -11,14 +12,22 @@ interface AutoCountOverlayProps {
   zoom: number;
   /** Full-resolution size of the current page, used to clamp the marquee. */
   pageSize: Size;
+  onTemplateResize: (box: BBox) => void;
+  onTemplateResizeEnd: () => void;
 }
 
 /** Draws the symbol template, the marquee, and every hit awaiting review. */
-export function AutoCountOverlay({ zoom, pageSize }: AutoCountOverlayProps) {
+export function AutoCountOverlay({
+  zoom,
+  pageSize,
+  onTemplateResize,
+  onTemplateResizeEnd,
+}: AutoCountOverlayProps) {
   const stage = useAutoCountStore((s) => s.stage);
   const templateBox = useAutoCountStore((s) => s.templateBox);
-  const matches = useAutoCountStore((s) => s.matches);
-  const accepted = useAutoCountStore((s) => s.accepted);
+  const allMatches = useAutoCountStore((s) => s.allMatches);
+  const rejected = useAutoCountStore((s) => s.rejected);
+  const threshold = useAutoCountStore((s) => s.options.threshold);
   const toggleMatch = useAutoCountStore((s) => s.toggleMatch);
   // Subscribed rather than read on demand so the marquee follows the pointer.
   const dragStart = useAutoCountStore((s) => s.dragStart);
@@ -30,6 +39,12 @@ export function AutoCountOverlay({ zoom, pageSize }: AutoCountOverlayProps) {
     dragStart && dragCurrent
       ? normaliseBox(dragStart, dragCurrent, pageSize.width, pageSize.height)
       : null;
+
+  // Filtered here rather than in the store so moving the threshold slider is instant.
+  const rejectedSet = new Set(rejected);
+  const visible = allMatches
+    .map((match, index) => ({ match, index, isAccepted: !rejectedSet.has(index) }))
+    .filter((item) => item.match.score >= threshold);
 
   const markerRadius = templateBox
     ? Math.max(Math.min(templateBox.width, templateBox.height) / 2, 6 / zoom)
@@ -53,16 +68,13 @@ export function AutoCountOverlay({ zoom, pageSize }: AutoCountOverlayProps) {
       )}
 
       {templateBox && !dragBox && (
-        <Group listening={false}>
-          <Rect
-            x={templateBox.x}
-            y={templateBox.y}
-            width={templateBox.width}
-            height={templateBox.height}
-            stroke={TEMPLATE_COLOR}
-            strokeWidth={2}
-            strokeScaleEnabled={false}
-            listening={false}
+        <Group>
+          <TemplateBoxEditor
+            box={templateBox}
+            zoom={zoom}
+            page={pageSize}
+            onResize={onTemplateResize}
+            onResizeEnd={onTemplateResizeEnd}
           />
           <Label
             x={templateBox.x}
@@ -72,13 +84,17 @@ export function AutoCountOverlay({ zoom, pageSize }: AutoCountOverlayProps) {
             listening={false}
           >
             <Tag fill={TEMPLATE_COLOR} cornerRadius={3} />
-            <Text text="สัญลักษณ์ต้นแบบ" fontSize={11} padding={4} fill="#0b1220" />
+            <Text
+              text="ต้นแบบ — ลากมุมเพื่อปรับกรอบ"
+              fontSize={11}
+              padding={4}
+              fill="#0b1220"
+            />
           </Label>
         </Group>
       )}
 
-      {matches.map((match, index) => {
-        const isAccepted = accepted[index];
+      {visible.map(({ match, index, isAccepted }) => {
         return (
           <Circle
             key={`${match.x}-${match.y}-${index}`}

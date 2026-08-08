@@ -1,8 +1,15 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
-import type { MeasurementSession, SessionFilter, StoredFile } from '@/types';
+import type {
+  MeasurementSession,
+  SessionFilter,
+  StoredFile,
+  SymbolLibraryFilter,
+  SymbolLibraryItem,
+} from '@/types';
 
 const DB_NAME = 'measurement-tool';
-const DB_VERSION = 1;
+/** v2 added the reusable symbol library. */
+const DB_VERSION = 2;
 
 interface MeasurementDB extends DBSchema {
   sessions: {
@@ -13,6 +20,11 @@ interface MeasurementDB extends DBSchema {
   files: {
     key: string;
     value: StoredFile;
+  };
+  symbols: {
+    key: string;
+    value: SymbolLibraryItem;
+    indexes: { 'by-updatedAt': number; 'by-category': string };
   };
 }
 
@@ -29,6 +41,12 @@ function getDb(): Promise<IDBPDatabase<MeasurementDB>> {
         }
         if (!db.objectStoreNames.contains('files')) {
           db.createObjectStore('files', { keyPath: 'id' });
+        }
+        // Added in v2 — existing databases pick it up on the next open.
+        if (!db.objectStoreNames.contains('symbols')) {
+          const store = db.createObjectStore('symbols', { keyPath: 'id' });
+          store.createIndex('by-updatedAt', 'updatedAt');
+          store.createIndex('by-category', 'category');
         }
       },
     });
@@ -77,6 +95,42 @@ export async function putFile(file: StoredFile): Promise<void> {
 export async function getFile(id: string): Promise<StoredFile | undefined> {
   const db = await getDb();
   return db.get('files', id);
+}
+
+/* ------------------------------ symbol library ------------------------------ */
+
+export async function putSymbol(symbol: SymbolLibraryItem): Promise<void> {
+  const db = await getDb();
+  await db.put('symbols', symbol);
+}
+
+export async function getAllSymbols(): Promise<SymbolLibraryItem[]> {
+  const db = await getDb();
+  const symbols = await db.getAllFromIndex('symbols', 'by-updatedAt');
+  return symbols.reverse();
+}
+
+export async function deleteSymbol(id: string): Promise<void> {
+  const db = await getDb();
+  await db.delete('symbols', id);
+}
+
+export function filterSymbols(
+  symbols: SymbolLibraryItem[],
+  filter: SymbolLibraryFilter,
+): SymbolLibraryItem[] {
+  const query = filter.query.trim().toLowerCase();
+  return symbols
+    .filter((symbol) => {
+      if (filter.category !== 'all' && symbol.category !== filter.category) return false;
+      if (!query) return true;
+      return [symbol.name, symbol.code, symbol.boqDescription ?? '', symbol.notes ?? '']
+        .join(' ')
+        .toLowerCase()
+        .includes(query);
+    })
+    // Most-used first, so the symbols a project actually relies on stay at the top.
+    .sort((a, b) => b.usageCount - a.usageCount || b.updatedAt - a.updatedAt);
 }
 
 /** Client-side filtering — the history set is small enough that indexes buy nothing. */

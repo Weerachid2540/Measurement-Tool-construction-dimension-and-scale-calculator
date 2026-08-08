@@ -11,9 +11,16 @@ export {
   useAutoCountStore,
   selectAcceptedPoints,
   selectAcceptedCount,
+  selectVisibleMatches,
   type AutoCountStore,
   type AutoCountStage,
+  type VisibleMatch,
 } from './useAutoCountStore';
+export {
+  useSymbolLibraryStore,
+  selectFilteredSymbols,
+  type SymbolLibraryStore,
+} from './useSymbolLibraryStore';
 export {
   useUiStore,
   type UiStore,
