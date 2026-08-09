@@ -5,6 +5,15 @@ import { formatDateTime } from '@/utils/format';
 /** Release notes, newest first. Keep in step with CHANGELOG.md. */
 const RELEASES: readonly { version: string; date: string; changes: string[] }[] = [
   {
+    version: '1.4.0',
+    date: '2026-08-08',
+    changes: [
+      'หมวดงาน ARCHITECTURE WORK พร้อม 8 หมวดย่อย — ผนัง พื้น ฝ้าเพดาน ทาสีผนัง ประตู-หน้าต่าง หลังคา สุขภัณฑ์ เบ็ดเตล็ด',
+      'เลือกหมวดงานแล้วตั้งวัสดุ หน่วย และชื่อรายการใน BOQ ให้อัตโนมัติ',
+      'BOQ และไฟล์ส่งออกแสดงหมวดงาน พร้อมสรุปเรียงตามลำดับหมวด',
+    ],
+  },
+  {
     version: '1.3.0',
     date: '2026-08-08',
     changes: [

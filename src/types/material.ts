@@ -1,4 +1,5 @@
 import type { QuantityUnit } from './scale';
+import type { WorkItemId } from './workCategory';
 
 export type MaterialKind =
   | 'concrete'
@@ -19,6 +20,8 @@ export type MaterialKind =
  */
 export interface MaterialSpec {
   kind: MaterialKind;
+  /** หมวดงานใน BOQ (เช่น งานผนัง) — ไม่กำหนดก็ได้ แล้วจะจัดกลุ่มตามชนิดวัสดุแทน */
+  workItem?: WorkItemId;
   /** Free-text override for the BOQ description, e.g. "พื้น ค.ส.ล. หนา 0.12 ม.". */
   name?: string;
   thicknessMm?: number;

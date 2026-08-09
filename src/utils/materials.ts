@@ -6,7 +6,7 @@ import type {
   MeasurementResult,
   QuantityUnit,
 } from '@/types';
-import { MATERIAL_PRESETS } from '@/types';
+import { MATERIAL_PRESETS, workItemPreset } from '@/types';
 import { formatNumber } from './format';
 import { isAreaType, isLengthType } from './measurement';
 
@@ -39,6 +39,10 @@ export const defaultMaterialSpec = (kind: MaterialKind): MaterialSpec => {
 };
 
 const mmToM = (mm: number | undefined): number => (mm ?? 0) / 1000;
+
+/** ชื่อหมวดงานที่เลือกไว้ ใช้ตั้งชื่อรายการใน BOQ ถ้าผู้ใช้ไม่ได้พิมพ์เอง */
+const workLabel = (spec: MaterialSpec): string | undefined =>
+  spec.workItem ? workItemPreset(spec.workItem)?.boqName : undefined;
 
 interface RawQuantity {
   quantity: number;
@@ -136,6 +140,8 @@ function areaBasedQuantity(
 ): RawQuantity {
   const areaM2 = (r.areaMm2 ?? 0) / 1_000_000;
   const preset = presetFor(kind);
+  // หมวดงานที่ผู้ใช้เลือกบอกได้ตรงกว่าชนิดวัสดุ เช่น "งานฝ้าเพดาน" แทน "งานตกแต่งผิว"
+  const name = workLabel(spec) ?? preset.label;
   if (preset.defaultUnit === 'm³') {
     const volumeM3 = areaM2 * mmToM(spec.thicknessMm);
     return {
@@ -143,14 +149,14 @@ function areaBasedQuantity(
       unit: 'm³',
       areaM2,
       volumeM3,
-      description: `${preset.label} ลึก ${formatNumber(mmToM(spec.thicknessMm), 3)} ม.`,
+      description: `${name} ลึก ${formatNumber(mmToM(spec.thicknessMm), 3)} ม.`,
     };
   }
   return {
     quantity: areaM2,
     unit: 'm²',
     areaM2,
-    description: `${preset.label} พื้นที่ ${formatNumber(areaM2, 3)} ตร.ม.`,
+    description: `${name} พื้นที่ ${formatNumber(areaM2, 3)} ตร.ม.`,
   };
 }
 
@@ -185,7 +191,7 @@ export function computeMaterial(
       raw = {
         quantity: result.primary.value,
         unit: result.primary.unit,
-        description: spec.name ?? 'รายการกำหนดเอง',
+        description: spec.name ?? workLabel(spec) ?? 'รายการกำหนดเอง',
       };
   }
 

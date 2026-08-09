@@ -1,6 +1,7 @@
-import type { MaterialKind, Measurement } from '@/types';
-import { MATERIAL_PRESETS, REBAR_SIZES } from '@/types';
+import type { MaterialKind, Measurement, WorkItemId } from '@/types';
+import { MATERIAL_PRESETS, REBAR_SIZES, WORK_GROUPS, workItemPreset } from '@/types';
 import { useMeasurementStore } from '@/store';
+import type { SelectOption } from '@/components/common';
 import { Checkbox, Field, Icon, NumberInput, Select, TextArea, TextInput } from '@/components/common';
 import { PALETTE } from '@/utils/colors';
 import { computeMeasurement, isAreaType, isLengthType, TYPE_LABELS } from '@/utils/measurement';
@@ -10,6 +11,13 @@ import { formatCurrency, formatNumber, formatQuantity } from '@/utils/format';
 const MATERIAL_OPTIONS = [
   { value: 'none' as const, label: '— ไม่กำหนดวัสดุ —' },
   ...MATERIAL_PRESETS.map((preset) => ({ value: preset.kind, label: preset.label })),
+];
+
+const WORK_OPTIONS: SelectOption<WorkItemId | 'none'>[] = [
+  { value: 'none', label: '— ไม่กำหนดหมวดงาน —' },
+  ...WORK_GROUPS.flatMap((group) =>
+    group.items.map((item) => ({ value: item.id, label: item.label, group: group.label })),
+  ),
 ];
 
 export function PropertiesPanel() {
@@ -41,9 +49,25 @@ export function PropertiesPanel() {
 
   const changeKind = (value: MaterialKind | 'none') => {
     updateMeasurement(measurement.id, {
-      material: value === 'none' ? undefined : defaultMaterialSpec(value),
+      material: value === 'none' ? undefined : { ...defaultMaterialSpec(value), workItem: spec?.workItem },
     });
   };
+
+  /**
+   * เลือกหมวดงานแล้วตั้งวัสดุให้อัตโนมัติเฉพาะตอนที่ยังไม่ได้กำหนด
+   * ถ้ากำหนดวัสดุไว้แล้วจะเก็บค่าที่ผู้ใช้กรอกไว้ทั้งหมด เปลี่ยนแค่หมวดงาน
+   */
+  const changeWorkItem = (value: WorkItemId | 'none') => {
+    if (value === 'none') {
+      if (spec) updateMeasurement(measurement.id, { material: { ...spec, workItem: undefined } });
+      return;
+    }
+    const preset = workItemPreset(value);
+    const base = spec ?? defaultMaterialSpec(preset?.materialKind ?? 'custom');
+    updateMeasurement(measurement.id, { material: { ...base, workItem: value } });
+  };
+
+  const workPreset = spec?.workItem ? workItemPreset(spec.workItem) : undefined;
 
   return (
     <div className="mt-panel-body mt-props">
@@ -116,6 +140,14 @@ export function PropertiesPanel() {
 
       <section className="mt-props__section">
         <h3>วัสดุ &amp; ปริมาณ</h3>
+        <Field label="หมวดงาน (BOQ)" hint={workPreset?.hint}>
+          <Select
+            value={spec?.workItem ?? 'none'}
+            options={WORK_OPTIONS}
+            onValueChange={changeWorkItem}
+          />
+        </Field>
+
         <Field label="ประเภทวัสดุ" hint={spec ? presetFor(spec.kind).hint : undefined}>
           <Select
             value={spec?.kind ?? 'none'}

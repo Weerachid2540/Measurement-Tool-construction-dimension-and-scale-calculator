@@ -6,6 +6,7 @@ import type {
   Measurement,
   ScaleSettings,
 } from '@/types';
+import { WORK_ITEMS, workGroupPreset, workItemOrder, workItemPreset } from '@/types';
 import { computeMeasurement, TYPE_LABELS } from './measurement';
 import { computeMaterial, presetFor } from './materials';
 
@@ -38,11 +39,13 @@ export function buildBoqReport(
     const material = computeMaterial(m, result);
 
     if (material) {
+      const work = m.material?.workItem ? workItemPreset(m.material.workItem) : undefined;
       return {
         no: index + 1,
         code: m.label,
         description: material.description,
-        category: presetFor(material.kind).label,
+        category: work?.label ?? presetFor(material.kind).label,
+        group: work ? workGroupPreset(work.group)?.label : undefined,
         unit: material.unit,
         quantity: material.quantity,
         unitPrice: material.unitPrice,
@@ -94,12 +97,16 @@ function groupRows(rows: BoqRow[]): BoqRow[] {
   return [...groups.values()].map((row, index) => ({ ...row, no: index + 1 }));
 }
 
+/** ลำดับหมวดงานอ้างจาก label เพราะแถวสรุปเก็บเฉพาะข้อความหมวด */
+const WORK_ORDER_BY_LABEL = new Map(WORK_ITEMS.map((item) => [item.label, workItemOrder(item.id)]));
+
 function summarise(rows: BoqRow[]): BoqSummaryRow[] {
   const totals = new Map<string, BoqSummaryRow>();
   for (const row of rows) {
     const key = `${row.category}|${row.unit}`;
     const entry = totals.get(key) ?? {
       category: row.category,
+      group: row.group,
       unit: row.unit,
       quantity: 0,
       amount: 0,
@@ -108,5 +115,11 @@ function summarise(rows: BoqRow[]): BoqSummaryRow[] {
     entry.amount += row.amount ?? 0;
     totals.set(key, entry);
   }
-  return [...totals.values()].sort((a, b) => a.category.localeCompare(b.category));
+  // หมวดงานที่กำหนดไว้มาก่อนตามลำดับ 1–8 ที่เหลือเรียงตามตัวอักษร
+  return [...totals.values()].sort((a, b) => {
+    const orderA = WORK_ORDER_BY_LABEL.get(a.category) ?? Number.MAX_SAFE_INTEGER;
+    const orderB = WORK_ORDER_BY_LABEL.get(b.category) ?? Number.MAX_SAFE_INTEGER;
+    if (orderA !== orderB) return orderA - orderB;
+    return a.category.localeCompare(b.category);
+  });
 }

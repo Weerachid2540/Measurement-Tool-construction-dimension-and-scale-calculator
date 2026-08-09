@@ -111,6 +111,7 @@ export function BoqPanel() {
                   <th>#</th>
                   <th>รหัส</th>
                   <th>รายการ</th>
+                  <th>หมวดงาน</th>
                   <th>หน่วย</th>
                   <th className="num">ปริมาณ</th>
                   <th className="num">ราคา/หน่วย</th>
@@ -123,6 +124,7 @@ export function BoqPanel() {
                     <td>{row.no}</td>
                     <td>{row.code}</td>
                     <td>{row.description}</td>
+                    <td title={row.group}>{row.category}</td>
                     <td>{row.unit}</td>
                     <td className="num">{formatNumber(row.quantity, 3)}</td>
                     <td className="num">
@@ -136,7 +138,7 @@ export function BoqPanel() {
               </tbody>
               <tfoot>
                 <tr>
-                  <td colSpan={6}>รวมทั้งสิ้น</td>
+                  <td colSpan={7}>รวมทั้งสิ้น</td>
                   <td className="num">{formatCurrency(report.subtotal)}</td>
                 </tr>
               </tfoot>

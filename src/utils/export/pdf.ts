@@ -115,8 +115,9 @@ export async function exportBoqToPdf(
   if (report.summary.length > 0) {
     autoTable(doc, {
       startY: afterTableY + 6,
-      head: [['หมวดงาน / Category', 'หน่วย', 'ปริมาณรวม', 'จำนวนเงิน']],
+      head: [['หมวดงานหลัก / Group', 'หมวดงาน / Category', 'หน่วย', 'ปริมาณรวม', 'จำนวนเงิน']],
       body: report.summary.map((row) => [
+        row.group ?? '-',
         row.category,
         row.unit,
         formatNumber(row.quantity, 3),
@@ -125,7 +126,7 @@ export async function exportBoqToPdf(
       styles: { font, fontSize: 9, cellPadding: 2 },
       headStyles: { font, fillColor: [51, 65, 85], textColor: 255 },
       theme: 'grid',
-      tableWidth: 140,
+      tableWidth: 190,
     });
   }
 

@@ -59,13 +59,34 @@ export function TextArea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return <textarea className="mt-input mt-input--area" rows={3} {...props} />;
 }
 
+export interface SelectOption<T extends string> {
+  value: T;
+  label: string;
+  /** ตัวเลือกที่มี `group` เดียวกันจะถูกจัดอยู่ใต้หัวข้อเดียวกัน (`<optgroup>`) */
+  group?: string;
+}
+
 interface SelectProps<T extends string> extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'value'> {
   value: T;
-  options: readonly { value: T; label: string }[];
+  options: readonly SelectOption<T>[];
   onValueChange: (value: T) => void;
 }
 
 export function Select<T extends string>({ value, options, onValueChange, ...rest }: SelectProps<T>) {
+  // เก็บลำดับเดิมไว้: ตัวเลือกที่ไม่มีกลุ่มแสดงตรงตำแหน่งของมัน กลุ่มแสดงที่ตำแหน่งของสมาชิกตัวแรก
+  const blocks: { group?: string; items: SelectOption<T>[] }[] = [];
+  for (const option of options) {
+    const last = blocks[blocks.length - 1];
+    if (option.group && last?.group === option.group) last.items.push(option);
+    else blocks.push({ group: option.group, items: [option] });
+  }
+
+  const renderOption = (option: SelectOption<T>) => (
+    <option key={option.value} value={option.value}>
+      {option.label}
+    </option>
+  );
+
   return (
     <select
       className="mt-input mt-select"
@@ -73,11 +94,15 @@ export function Select<T extends string>({ value, options, onValueChange, ...res
       onChange={(e) => onValueChange(e.target.value as T)}
       {...rest}
     >
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
+      {blocks.map((block, index) =>
+        block.group ? (
+          <optgroup key={`${block.group}-${index}`} label={block.group}>
+            {block.items.map(renderOption)}
+          </optgroup>
+        ) : (
+          block.items.map(renderOption)
+        ),
+      )}
     </select>
   );
 }

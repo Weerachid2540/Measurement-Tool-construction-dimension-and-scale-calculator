@@ -75,6 +75,7 @@ function buildBoqSheet(workbook: ExcelJSNamespace.Workbook, report: BoqReport): 
     { key: 'no', width: 6 },
     { key: 'code', width: 12 },
     { key: 'description', width: 52 },
+    { key: 'group', width: 30 },
     { key: 'category', width: 24 },
     { key: 'unit', width: 8 },
     { key: 'quantity', width: 14 },
@@ -83,7 +84,7 @@ function buildBoqSheet(workbook: ExcelJSNamespace.Workbook, report: BoqReport): 
     { key: 'remark', width: 28 },
   ];
 
-  sheet.mergeCells('A1:I1');
+  sheet.mergeCells('A1:J1');
   const title = sheet.getCell('A1');
   title.value = 'BILL OF QUANTITIES (BOQ)';
   title.font = { bold: true, size: 16 };
@@ -103,6 +104,7 @@ function buildBoqSheet(workbook: ExcelJSNamespace.Workbook, report: BoqReport): 
     no: 'No.',
     code: 'Code',
     description: 'รายการ / Description',
+    group: 'หมวดงานหลัก / Work group',
     category: 'หมวดงาน / Category',
     unit: 'หน่วย',
     quantity: 'ปริมาณ',
@@ -118,6 +120,7 @@ function buildBoqSheet(workbook: ExcelJSNamespace.Workbook, report: BoqReport): 
       no: row.no,
       code: row.code,
       description: row.description,
+      group: row.group ?? '',
       category: row.category,
       unit: row.unit,
       quantity: row.quantity,
@@ -141,12 +144,13 @@ function buildBoqSheet(workbook: ExcelJSNamespace.Workbook, report: BoqReport): 
   totalRow.getCell('amount').numFmt = '#,##0.00';
 
   sheet.views = [{ state: 'frozen', ySplit: headerRow.number }];
-  sheet.autoFilter = { from: { row: headerRow.number, column: 1 }, to: { row: lastDataRow, column: 9 } };
+  sheet.autoFilter = { from: { row: headerRow.number, column: 1 }, to: { row: lastDataRow, column: 10 } };
 }
 
 function buildSummarySheet(workbook: ExcelJSNamespace.Workbook, report: BoqReport): void {
   const sheet = workbook.addWorksheet('Summary');
   sheet.columns = [
+    { key: 'group', width: 30 },
     { key: 'category', width: 32 },
     { key: 'unit', width: 10 },
     { key: 'quantity', width: 16 },
@@ -154,6 +158,7 @@ function buildSummarySheet(workbook: ExcelJSNamespace.Workbook, report: BoqRepor
   ];
   styleHeader(
     sheet.addRow({
+      group: 'หมวดงานหลัก / Work group',
       category: 'หมวดงาน / Category',
       unit: 'หน่วย',
       quantity: 'ปริมาณรวม',

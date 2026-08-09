@@ -2,7 +2,10 @@ export interface BoqRow {
   no: number;
   code: string;
   description: string;
+  /** หมวดย่อย เช่น "1. งานผนัง (Wall)" หรือชนิดวัสดุเมื่อไม่ได้เลือกหมวดงาน */
   category: string;
+  /** หมวดงานหลัก เช่น "งานสถาปัตยกรรม (ARCHITECTURE WORK)" */
+  group?: string;
   unit: string;
   quantity: number;
   unitPrice?: number;
@@ -12,6 +15,7 @@ export interface BoqRow {
 
 export interface BoqSummaryRow {
   category: string;
+  group?: string;
   unit: string;
   quantity: number;
   amount: number;

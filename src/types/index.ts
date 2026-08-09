@@ -2,6 +2,7 @@ export * from './geometry';
 export * from './canvas';
 export * from './scale';
 export * from './material';
+export * from './workCategory';
 export * from './measurement';
 export * from './document';
 export * from './session';
