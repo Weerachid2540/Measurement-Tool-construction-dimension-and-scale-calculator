@@ -3,6 +3,7 @@ import { useUiStore } from '@/store';
 import { Icon, type IconName } from '@/components/common';
 import { MeasurementList } from './MeasurementList';
 import { PropertiesPanel } from './PropertiesPanel';
+import { TakeoffPanel } from './TakeoffPanel';
 import { BoqPanel } from './BoqPanel';
 import { HistoryPanel } from './HistoryPanel';
 import { AutoCountPanel } from './AutoCountPanel';
@@ -11,6 +12,7 @@ const TABS: { id: PanelTab; label: string; icon: IconName }[] = [
   { id: 'measurements', label: 'รายการวัด', icon: 'list' },
   { id: 'properties', label: 'คุณสมบัติ', icon: 'settings' },
   { id: 'autoCount', label: 'นับอัตโนมัติ', icon: 'count' },
+  { id: 'takeoff', label: 'ถอดแบบ', icon: 'calibrate' },
   { id: 'boq', label: 'BOQ', icon: 'table' },
   { id: 'history', label: 'ประวัติ', icon: 'history' },
 ];
@@ -22,7 +24,13 @@ export function SidePanel() {
   const togglePanel = useUiStore((s) => s.togglePanel);
 
   return (
-    <aside className={`mt-panel ${panelOpen ? '' : 'is-collapsed'}`} aria-label="แผงข้อมูล">
+    // หน้าถอดแบบมีตารางกรอกตัวเลขหลายคอลัมน์ จึงกางเป็นครึ่งจอ
+    <aside
+      className={`mt-panel ${panelOpen ? '' : 'is-collapsed'} ${
+        panelTab === 'takeoff' ? 'is-wide' : ''
+      }`}
+      aria-label="แผงข้อมูล"
+    >
       <div className="mt-panel__tabs" role="tablist">
         {TABS.map((tab) => (
           <button
@@ -53,6 +61,7 @@ export function SidePanel() {
           {panelTab === 'measurements' && <MeasurementList />}
           {panelTab === 'properties' && <PropertiesPanel />}
           {panelTab === 'autoCount' && <AutoCountPanel />}
+          {panelTab === 'takeoff' && <TakeoffPanel />}
           {panelTab === 'boq' && <BoqPanel />}
           {panelTab === 'history' && <HistoryPanel />}
         </div>

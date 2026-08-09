@@ -6,7 +6,7 @@ import type {
   Measurement,
   ScaleSettings,
 } from '@/types';
-import { WORK_ITEMS, workGroupPreset, workItemOrder, workItemPreset } from '@/types';
+import { TAKEOFF_GROUPS, takeoffCategory, takeoffGroup } from '@/types';
 import { computeMeasurement, TYPE_LABELS } from './measurement';
 import { computeMaterial, presetFor } from './materials';
 
@@ -39,13 +39,18 @@ export function buildBoqReport(
     const material = computeMaterial(m, result);
 
     if (material) {
-      const work = m.material?.workItem ? workItemPreset(m.material.workItem) : undefined;
+      const work = m.material?.workGroup ? takeoffGroup(m.material.workGroup) : undefined;
+      const workCategory = work ? takeoffCategory(work.category) : undefined;
       return {
         no: index + 1,
         code: m.label,
         description: material.description,
-        category: work?.label ?? presetFor(material.kind).label,
-        group: work ? workGroupPreset(work.group)?.label : undefined,
+        // ใส่เลขหมวดนำหน้าเพราะชื่อหมวดซ้ำข้ามหมวดหลักได้ เช่น "งานพื้น" มีทั้งโครงสร้างและสถาปัตย์
+        category:
+          work && workCategory
+            ? `${workCategory.no}.${work.no} ${work.label}`
+            : presetFor(material.kind).label,
+        group: workCategory ? `${workCategory.no}. ${workCategory.label}` : undefined,
         unit: material.unit,
         quantity: material.quantity,
         unitPrice: material.unitPrice,
@@ -98,7 +103,13 @@ function groupRows(rows: BoqRow[]): BoqRow[] {
 }
 
 /** ลำดับหมวดงานอ้างจาก label เพราะแถวสรุปเก็บเฉพาะข้อความหมวด */
-const WORK_ORDER_BY_LABEL = new Map(WORK_ITEMS.map((item) => [item.label, workItemOrder(item.id)]));
+const WORK_ORDER_BY_LABEL = new Map<string, number>(
+  TAKEOFF_GROUPS.map((group) => {
+    const category = takeoffCategory(group.category);
+    const no = category?.no ?? 99;
+    return [`${no}.${group.no} ${group.label}`, no * 100 + group.no];
+  }),
+);
 
 function summarise(rows: BoqRow[]): BoqSummaryRow[] {
   const totals = new Map<string, BoqSummaryRow>();

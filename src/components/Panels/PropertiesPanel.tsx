@@ -1,5 +1,11 @@
-import type { MaterialKind, Measurement, WorkItemId } from '@/types';
-import { MATERIAL_PRESETS, REBAR_SIZES, WORK_GROUPS, workItemPreset } from '@/types';
+import type { MaterialKind, Measurement, TakeoffGroupId } from '@/types';
+import {
+  MATERIAL_PRESETS,
+  REBAR_SIZES,
+  TAKEOFF_CATEGORIES,
+  takeoffGroup,
+  takeoffGroupsOf,
+} from '@/types';
 import { useMeasurementStore } from '@/store';
 import type { SelectOption } from '@/components/common';
 import { Checkbox, Field, Icon, NumberInput, Select, TextArea, TextInput } from '@/components/common';
@@ -13,10 +19,14 @@ const MATERIAL_OPTIONS = [
   ...MATERIAL_PRESETS.map((preset) => ({ value: preset.kind, label: preset.label })),
 ];
 
-const WORK_OPTIONS: SelectOption<WorkItemId | 'none'>[] = [
+const WORK_OPTIONS: SelectOption<TakeoffGroupId>[] = [
   { value: 'none', label: '— ไม่กำหนดหมวดงาน —' },
-  ...WORK_GROUPS.flatMap((group) =>
-    group.items.map((item) => ({ value: item.id, label: item.label, group: group.label })),
+  ...TAKEOFF_CATEGORIES.flatMap((category) =>
+    takeoffGroupsOf(category.id).map((group) => ({
+      value: group.id,
+      label: `${group.no}. ${group.label}`,
+      group: `${category.no}. ${category.label}`,
+    })),
   ),
 ];
 
@@ -49,7 +59,8 @@ export function PropertiesPanel() {
 
   const changeKind = (value: MaterialKind | 'none') => {
     updateMeasurement(measurement.id, {
-      material: value === 'none' ? undefined : { ...defaultMaterialSpec(value), workItem: spec?.workItem },
+      material:
+        value === 'none' ? undefined : { ...defaultMaterialSpec(value), workGroup: spec?.workGroup },
     });
   };
 
@@ -57,17 +68,17 @@ export function PropertiesPanel() {
    * เลือกหมวดงานแล้วตั้งวัสดุให้อัตโนมัติเฉพาะตอนที่ยังไม่ได้กำหนด
    * ถ้ากำหนดวัสดุไว้แล้วจะเก็บค่าที่ผู้ใช้กรอกไว้ทั้งหมด เปลี่ยนแค่หมวดงาน
    */
-  const changeWorkItem = (value: WorkItemId | 'none') => {
+  const changeWorkGroup = (value: TakeoffGroupId) => {
     if (value === 'none') {
-      if (spec) updateMeasurement(measurement.id, { material: { ...spec, workItem: undefined } });
+      if (spec) updateMeasurement(measurement.id, { material: { ...spec, workGroup: undefined } });
       return;
     }
-    const preset = workItemPreset(value);
-    const base = spec ?? defaultMaterialSpec(preset?.materialKind ?? 'custom');
-    updateMeasurement(measurement.id, { material: { ...base, workItem: value } });
+    const group = takeoffGroup(value);
+    const base = spec ?? defaultMaterialSpec(group?.materialKind ?? 'custom');
+    updateMeasurement(measurement.id, { material: { ...base, workGroup: value } });
   };
 
-  const workPreset = spec?.workItem ? workItemPreset(spec.workItem) : undefined;
+  const workGroupOfSpec = spec?.workGroup ? takeoffGroup(spec.workGroup) : undefined;
 
   return (
     <div className="mt-panel-body mt-props">
@@ -140,11 +151,14 @@ export function PropertiesPanel() {
 
       <section className="mt-props__section">
         <h3>วัสดุ &amp; ปริมาณ</h3>
-        <Field label="หมวดงาน (BOQ)" hint={workPreset?.hint}>
+        <Field
+          label="หมวดงาน (BOQ)"
+          hint={workGroupOfSpec ? 'ใช้จัดกลุ่มรายการใน BOQ และไฟล์ส่งออก' : undefined}
+        >
           <Select
-            value={spec?.workItem ?? 'none'}
+            value={spec?.workGroup ?? 'none'}
             options={WORK_OPTIONS}
-            onValueChange={changeWorkItem}
+            onValueChange={changeWorkGroup}
           />
         </Field>
 

@@ -21,6 +21,7 @@ export {
   selectFilteredSymbols,
   type SymbolLibraryStore,
 } from './useSymbolLibraryStore';
+export { useTakeoffStore, type TakeoffStore } from './useTakeoffStore';
 export {
   useUiStore,
   type UiStore,

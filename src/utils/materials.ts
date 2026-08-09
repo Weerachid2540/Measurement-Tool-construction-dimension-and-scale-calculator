@@ -6,7 +6,7 @@ import type {
   MeasurementResult,
   QuantityUnit,
 } from '@/types';
-import { MATERIAL_PRESETS, workItemPreset } from '@/types';
+import { MATERIAL_PRESETS, takeoffGroup } from '@/types';
 import { formatNumber } from './format';
 import { isAreaType, isLengthType } from './measurement';
 
@@ -42,7 +42,7 @@ const mmToM = (mm: number | undefined): number => (mm ?? 0) / 1000;
 
 /** ชื่อหมวดงานที่เลือกไว้ ใช้ตั้งชื่อรายการใน BOQ ถ้าผู้ใช้ไม่ได้พิมพ์เอง */
 const workLabel = (spec: MaterialSpec): string | undefined =>
-  spec.workItem ? workItemPreset(spec.workItem)?.boqName : undefined;
+  spec.workGroup ? takeoffGroup(spec.workGroup)?.label : undefined;
 
 interface RawQuantity {
   quantity: number;

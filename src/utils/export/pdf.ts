@@ -38,7 +38,7 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
-async function registerFont(doc: jsPDF): Promise<string> {
+export async function registerFont(doc: jsPDF): Promise<string> {
   const base64 = await fetchThaiFont();
   if (!base64) return 'helvetica';
   doc.addFileToVFS(`${THAI_FONT_NAME}.ttf`, base64);
@@ -155,7 +155,7 @@ function appendSnapshotPage(doc: jsPDF, snapshot: string, font: string): void {
 }
 
 /** `lastAutoTable` is attached by the plugin at runtime and is not in jsPDF's types. */
-function getLastAutoTableY(doc: jsPDF, fallback: number): number {
+export function getLastAutoTableY(doc: jsPDF, fallback: number): number {
   const withTable = doc as jsPDF & { lastAutoTable?: { finalY?: number } };
   return withTable.lastAutoTable?.finalY ?? fallback;
 }

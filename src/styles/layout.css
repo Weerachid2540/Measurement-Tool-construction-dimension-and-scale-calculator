@@ -255,7 +255,13 @@
   min-height: 0;
 }
 
-.mt-panel.is-collapsed {
+/* แท็บถอดแบบต้องกรอกตัวเลขหลายช่องต่อแถว จึงกางเป็นครึ่งจอ */
+.mt-panel.is-wide {
+  width: clamp(var(--mt-panel-width), 40vw, 780px);
+}
+
+.mt-panel.is-collapsed,
+.mt-panel.is-wide.is-collapsed {
   width: auto;
 }
 

@@ -3,7 +3,13 @@ import type { BoqOptions } from '@/types';
 import { DEFAULT_BOQ_OPTIONS } from '@/utils/boq';
 import { createId } from '@/utils/id';
 
-export type PanelTab = 'measurements' | 'properties' | 'autoCount' | 'boq' | 'history';
+export type PanelTab =
+  | 'measurements'
+  | 'properties'
+  | 'autoCount'
+  | 'takeoff'
+  | 'boq'
+  | 'history';
 export type WorkspaceMode = '2d' | '3d';
 export type ThemeMode = 'dark' | 'light';
 
