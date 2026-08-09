@@ -42,13 +42,13 @@ export interface TakeoffGroup {
 
 export const TAKEOFF_GROUPS: readonly TakeoffGroup[] = [
   // 1. STRUCTURE WORK
-  { id: 'str-earthwork', category: 'structure', no: 1, label: 'งานดิน', materialKind: 'earthwork' },
-  { id: 'str-foundation', category: 'structure', no: 2, label: 'งานฐานรากและเสาเข็ม', materialKind: 'concrete' },
-  { id: 'str-column', category: 'structure', no: 3, label: 'งานเสา', materialKind: 'concrete' },
-  { id: 'str-beam', category: 'structure', no: 4, label: 'งานคาน', materialKind: 'concrete' },
-  { id: 'str-slab', category: 'structure', no: 5, label: 'งานพื้น', materialKind: 'concrete' },
-  { id: 'str-stair', category: 'structure', no: 6, label: 'งานบันได', materialKind: 'concrete' },
-  { id: 'str-roof-frame', category: 'structure', no: 7, label: 'งานโครงหลังคา', materialKind: 'steel' },
+  { id: 'str-pile', category: 'structure', no: 1, label: 'งานเสาเข็ม', materialKind: 'concrete' },
+  { id: 'str-foundation', category: 'structure', no: 2, label: 'งานฐานราก', materialKind: 'concrete' },
+  { id: 'str-column', category: 'structure', no: 3, label: 'งานเสาคอนกรีต', materialKind: 'concrete' },
+  { id: 'str-beam', category: 'structure', no: 4, label: 'งานคานคอนกรีต', materialKind: 'concrete' },
+  { id: 'str-slab', category: 'structure', no: 5, label: 'งานพื้นคอนกรีต', materialKind: 'concrete' },
+  { id: 'str-roof-frame', category: 'structure', no: 6, label: 'งานโครงสร้างเหล็กหลังคา', materialKind: 'steel' },
+  { id: 'str-stair', category: 'structure', no: 7, label: 'งานโครงสร้างบันได', materialKind: 'concrete' },
 
   // 2. ARCHITECTURE WORK
   { id: 'arch-wall', category: 'architecture', no: 1, label: 'งานผนัง', materialKind: 'masonry' },
@@ -108,14 +108,25 @@ export interface TakeoffItemDef {
   no: number;
   name: string;
   unit: QuantityUnit;
+  /** หน่วยที่แสดงให้ผู้ใช้เห็น เมื่อคำไทยสื่อกว่ารหัสหน่วย เช่น "ต้น" แทน "nos" */
+  unitLabel?: string;
   /** สูตรที่แสดงให้ผู้ใช้เห็นบนหน้าจอ */
   formula: string;
   inputs: readonly TakeoffInputDef[];
+  /**
+   * ข้อความแสดงการคำนวณ เมื่อสูตรไม่ใช่การคูณค่าที่กรอกเรียงกัน
+   * เช่น ไม้แบบฐานราก (กว้าง+ยาว)×2×ความหนา — ปกติระบบเอาค่าที่กรอกมาคูณต่อกันให้เอง
+   */
+  workingExpr?: (v: Record<string, number>) => string;
   /** ยังไม่มีวิธีคิด — แสดงแค่ช่องตำแหน่ง/รายละเอียด ไม่คิดปริมาณและไม่เข้ายอดเงิน */
   noteOnly?: boolean;
+  /** งานที่ทำซ้ำทุกชั้น — เปิดช่อง "ชั้น" ให้ผู้ใช้ใส่เอง (คาน พื้น) */
+  perLevel?: boolean;
+  /** งานที่นับตำแหน่งจากแบบได้ — เปิดปุ่มดึงผลจากเครื่องมือนับอัตโนมัติมาใส่ช่องปริมาณ */
+  pullAutoCount?: boolean;
   /** รายการนี้หักช่องเปิด (ประตู/หน้าต่าง) ออกจากปริมาณได้ */
   deductOpenings: boolean;
-  /** ปริมาณก่อนหักช่องเปิดและก่อนคูณจำนวนชุด */
+  /** ปริมาณตามสูตร ก่อนหักช่องเปิดและก่อนเผื่อเสียหาย */
   base: (v: Record<string, number>) => number;
   /**
    * ตัวคูณพื้นที่ช่องเปิดที่หักออก — ปกติ 1
@@ -211,6 +222,52 @@ const noteOnlyItem = (
   base: () => 0,
   ...(hint ? { hint } : {}),
 });
+
+/**
+ * รายการที่คิดปริมาณจากแบบเอง (เช่น เหล็กเสริม ซึ่งต้องอ่าน bar schedule)
+ * เปิดช่องปริมาณช่องเดียว แต่ยังใช้เผื่อเสียหายและราคาต่อหน่วยได้ตามปกติ
+ */
+const manualQuantityItem = (
+  id: string,
+  groupId: TakeoffGroupId,
+  no: number,
+  name: string,
+  unit: QuantityUnit,
+  unitLabel: string,
+  extra?: Partial<TakeoffItemDef>,
+): TakeoffItemDef => ({
+  id,
+  groupId,
+  no,
+  name,
+  unit,
+  unitLabel,
+  formula: 'กรอกปริมาณเอง',
+  inputs: [{ key: 'quantity', label: 'ปริมาณ', unit: unitLabel, defaultValue: 0, min: 0, step: 1 }],
+  workingExpr: () => 'กรอกปริมาณเอง',
+  deductOpenings: false,
+  base: (v) => n(v, 'quantity'),
+  ...extra,
+});
+
+/** ช่องกรอกระยะเป็นเมตร ซึ่งเป็นหน่วยที่ใช้ถอดแบบงานโครงสร้างเกือบทั้งหมด */
+const metreInput = (
+  key: string,
+  label: string,
+  defaultValue: number,
+  step = 0.05,
+): TakeoffInputDef => ({ key, label, unit: 'ม.', defaultValue, min: 0, step });
+
+const wholeInput = (
+  key: string,
+  label: string,
+  unit: string,
+  defaultValue: number,
+): TakeoffInputDef => ({ key, label, unit, defaultValue, min: 0, step: 1 });
+
+/** ตัวเลขในบรรทัดแสดงการคำนวณ — types ห้ามพึ่ง utils จึงจัดรูปแบบเองตรงนี้ */
+const f = (value: number): string =>
+  value.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const plasterBagsPerSqm =
   (coverageAt10mm: number) =>
@@ -405,7 +462,314 @@ const WALL_ITEMS: readonly TakeoffItemDef[] = [
   ),
 ];
 
-export const TAKEOFF_ITEMS: readonly TakeoffItemDef[] = [...WALL_ITEMS];
+/**
+ * งานโครงสร้าง — คอนกรีตและไม้แบบคิดจากขนาดหน้าตัดตรงๆ ส่วนเหล็กเสริมเปิดช่องให้กรอกเอง
+ * เพราะปริมาณเหล็กต้องอ่านจาก bar schedule ไม่ใช่สิ่งที่เดาจากขนาดหน้าตัดได้
+ */
+const STRUCTURE_ITEMS: readonly TakeoffItemDef[] = [
+  // 1. งานเสาเข็ม — คิดเป็นจำนวนต้นทั้งหมด ชนิด/ขนาดเข็มระบุในช่องตำแหน่ง/รายละเอียด
+  manualQuantityItem('str-pile-type', 'str-pile', 1, 'ชนิดเสาเข็ม', 'nos', 'ต้น', {
+    pullAutoCount: true,
+    hint: 'ระบุชนิดและขนาดในช่องตำแหน่ง/รายละเอียด เช่น เข็มตอก I-22 ยาว 12 ม.',
+  }),
+  manualQuantityItem('str-pile-test', 'str-pile', 2, 'ทดสอบเสาเข็ม', 'nos', 'ต้น', {
+    pullAutoCount: true,
+    hint: 'ระบุวิธีทดสอบในช่องตำแหน่ง/รายละเอียด เช่น Seismic Test หรือ Dynamic Load Test',
+  }),
+  manualQuantityItem('str-pile-chipping', 'str-pile', 3, 'งานสกัดเสาเข็ม', 'nos', 'ต้น', {
+    pullAutoCount: true,
+  }),
+
+  // 2. งานฐานราก
+  {
+    id: 'str-footing-concrete',
+    groupId: 'str-foundation',
+    no: 1,
+    name: 'คอนกรีตฐานราก',
+    unit: 'm³',
+    formula: 'ความกว้าง × ความยาว × ความหนา × จำนวนฐาน',
+    inputs: [
+      metreInput('width', 'ความกว้างฐาน', 1.5),
+      metreInput('length', 'ความยาวฐาน', 1.5),
+      metreInput('thickness', 'ความหนาฐาน', 0.35),
+      wholeInput('count', 'จำนวนฐาน', 'ฐาน', 1),
+    ],
+    deductOpenings: false,
+    base: (v) => n(v, 'width') * n(v, 'length') * n(v, 'thickness') * n(v, 'count'),
+  },
+  {
+    id: 'str-footing-formwork',
+    groupId: 'str-foundation',
+    no: 2,
+    name: 'ไม้แบบฐานราก',
+    unit: 'm²',
+    formula: '(ความกว้าง + ความยาว) × 2 × ความหนา × จำนวนฐาน',
+    inputs: [
+      metreInput('width', 'ความกว้างฐาน', 1.5),
+      metreInput('length', 'ความยาวฐาน', 1.5),
+      metreInput('thickness', 'ความหนาฐาน', 0.35),
+      wholeInput('count', 'จำนวนฐาน', 'ฐาน', 1),
+    ],
+    deductOpenings: false,
+    base: (v) => (n(v, 'width') + n(v, 'length')) * 2 * n(v, 'thickness') * n(v, 'count'),
+    workingExpr: (v) =>
+      `(${f(n(v, 'width'))} + ${f(n(v, 'length'))}) × 2 × ${f(n(v, 'thickness'))} × ${n(v, 'count')}`,
+  },
+  {
+    id: 'str-footing-lean',
+    groupId: 'str-foundation',
+    no: 3,
+    name: 'คอนกรีตหยาบรองฐานราก',
+    unit: 'm³',
+    formula: 'ความกว้าง × ความยาว × ความหนา × จำนวนฐาน',
+    inputs: [
+      metreInput('width', 'ความกว้าง', 1.7),
+      metreInput('length', 'ความยาว', 1.7),
+      metreInput('thickness', 'ความหนา', 0.05, 0.01),
+      wholeInput('count', 'จำนวนฐาน', 'ฐาน', 1),
+    ],
+    deductOpenings: false,
+    base: (v) => n(v, 'width') * n(v, 'length') * n(v, 'thickness') * n(v, 'count'),
+    hint: 'ปกติขยายออกจากขอบฐานรากด้านละ 10 ซม.',
+  },
+  {
+    id: 'str-footing-sand',
+    groupId: 'str-foundation',
+    no: 4,
+    name: 'ทรายหยาบรองก้นหลุม',
+    unit: 'm³',
+    formula: 'ความกว้าง × ความยาว × ความหนา × จำนวนฐาน',
+    inputs: [
+      metreInput('width', 'ความกว้าง', 1.7),
+      metreInput('length', 'ความยาว', 1.7),
+      metreInput('thickness', 'ความหนาทราย', 0.05, 0.01),
+      wholeInput('count', 'จำนวนฐาน', 'ฐาน', 1),
+    ],
+    deductOpenings: false,
+    base: (v) => n(v, 'width') * n(v, 'length') * n(v, 'thickness') * n(v, 'count'),
+  },
+  manualQuantityItem('str-footing-rebar', 'str-foundation', 5, 'เหล็กเสริมฐานราก', 'kg', 'กก.', {
+    hint: 'อ่านจาก bar schedule — น้ำหนักเหล็กต่อเมตร = D² ÷ 162.2',
+  }),
+
+  // 3. งานเสาคอนกรีต
+  {
+    id: 'str-column-concrete',
+    groupId: 'str-column',
+    no: 1,
+    name: 'คอนกรีตเสา',
+    unit: 'm³',
+    formula: 'ความกว้าง × ความลึก × ความสูง × จำนวนต้น',
+    inputs: [
+      metreInput('width', 'ความกว้างหน้าตัด', 0.2, 0.01),
+      metreInput('depth', 'ความลึกหน้าตัด', 0.2, 0.01),
+      metreInput('height', 'ความสูงเสา', 3),
+      wholeInput('count', 'จำนวนต้น', 'ต้น', 1),
+    ],
+    deductOpenings: false,
+    base: (v) => n(v, 'width') * n(v, 'depth') * n(v, 'height') * n(v, 'count'),
+  },
+  {
+    id: 'str-column-formwork',
+    groupId: 'str-column',
+    no: 2,
+    name: 'ไม้แบบเสา',
+    unit: 'm²',
+    formula: '(ความกว้าง + ความลึก) × 2 × ความสูง × จำนวนต้น',
+    inputs: [
+      metreInput('width', 'ความกว้างหน้าตัด', 0.2, 0.01),
+      metreInput('depth', 'ความลึกหน้าตัด', 0.2, 0.01),
+      metreInput('height', 'ความสูงเสา', 3),
+      wholeInput('count', 'จำนวนต้น', 'ต้น', 1),
+    ],
+    deductOpenings: false,
+    base: (v) => (n(v, 'width') + n(v, 'depth')) * 2 * n(v, 'height') * n(v, 'count'),
+    workingExpr: (v) =>
+      `(${f(n(v, 'width'))} + ${f(n(v, 'depth'))}) × 2 × ${f(n(v, 'height'))} × ${n(v, 'count')}`,
+  },
+  manualQuantityItem('str-column-rebar', 'str-column', 3, 'เหล็กเสริมเสา', 'kg', 'กก.', {
+    hint: 'รวมเหล็กยืนและเหล็กปลอก — อ่านจาก bar schedule',
+  }),
+
+  // 4. งานคานคอนกรีต (แยกตามชั้น)
+  {
+    id: 'str-beam-concrete',
+    groupId: 'str-beam',
+    no: 1,
+    name: 'คอนกรีตคาน',
+    unit: 'm³',
+    formula: 'ความกว้าง × ความลึก × ความยาว',
+    inputs: [
+      metreInput('width', 'ความกว้างคาน', 0.2, 0.01),
+      metreInput('depth', 'ความลึกคาน', 0.4, 0.01),
+      metreInput('length', 'ความยาวคาน', 4),
+    ],
+    perLevel: true,
+    deductOpenings: false,
+    base: (v) => n(v, 'width') * n(v, 'depth') * n(v, 'length'),
+  },
+  {
+    id: 'str-beam-formwork',
+    groupId: 'str-beam',
+    no: 2,
+    name: 'ไม้แบบคาน',
+    unit: 'm²',
+    formula: '(ความลึก × 2 + ความกว้าง) × ความยาว',
+    inputs: [
+      metreInput('width', 'ความกว้างคาน', 0.2, 0.01),
+      metreInput('depth', 'ความลึกคาน', 0.4, 0.01),
+      metreInput('length', 'ความยาวคาน', 4),
+    ],
+    perLevel: true,
+    deductOpenings: false,
+    // ข้างคานสองด้าน + ท้องคาน — หลังคานติดพื้นจึงไม่คิด
+    base: (v) => (n(v, 'depth') * 2 + n(v, 'width')) * n(v, 'length'),
+    workingExpr: (v) =>
+      `(${f(n(v, 'depth'))} × 2 + ${f(n(v, 'width'))}) × ${f(n(v, 'length'))}`,
+  },
+  manualQuantityItem('str-beam-rebar', 'str-beam', 3, 'เหล็กเสริมคาน', 'kg', 'กก.', {
+    perLevel: true,
+    hint: 'รวมเหล็กนอนและเหล็กปลอก — อ่านจาก bar schedule',
+  }),
+
+  // 5. งานพื้นคอนกรีต (แยกตามชั้น)
+  {
+    id: 'str-slab-concrete',
+    groupId: 'str-slab',
+    no: 1,
+    name: 'คอนกรีตพื้น',
+    unit: 'm³',
+    formula: 'ความกว้าง × ความยาว × ความหนา',
+    inputs: [
+      metreInput('width', 'ความกว้าง', 4),
+      metreInput('length', 'ความยาว', 5),
+      metreInput('thickness', 'ความหนาพื้น', 0.12, 0.01),
+    ],
+    perLevel: true,
+    deductOpenings: false,
+    base: (v) => n(v, 'width') * n(v, 'length') * n(v, 'thickness'),
+  },
+  {
+    id: 'str-slab-formwork',
+    groupId: 'str-slab',
+    no: 2,
+    name: 'ไม้แบบท้องพื้น',
+    unit: 'm²',
+    formula: 'ความกว้าง × ความยาว',
+    inputs: [metreInput('width', 'ความกว้าง', 4), metreInput('length', 'ความยาว', 5)],
+    perLevel: true,
+    deductOpenings: false,
+    base: (v) => n(v, 'width') * n(v, 'length'),
+  },
+  manualQuantityItem('str-slab-rebar', 'str-slab', 3, 'เหล็กเสริมพื้น / ไวร์เมช', 'kg', 'กก.', {
+    perLevel: true,
+    hint: 'ไวร์เมชคิดเป็น ตร.ม. ก็ได้ — เปลี่ยนหน่วยที่ชื่อรายการใน BOQ ตอนส่งออก',
+  }),
+
+  // 6. งานโครงสร้างเหล็กหลังคา
+  {
+    id: 'str-roof-steel',
+    groupId: 'str-roof-frame',
+    no: 1,
+    name: 'เหล็กรูปพรรณโครงหลังคา',
+    unit: 'kg',
+    formula: 'ความยาวรวม × น้ำหนักต่อเมตร',
+    inputs: [
+      metreInput('length', 'ความยาวรวม', 20, 0.5),
+      {
+        key: 'weightPerM',
+        label: 'น้ำหนักต่อเมตร',
+        unit: 'กก./ม.',
+        defaultValue: 5.31,
+        min: 0,
+        step: 0.01,
+      },
+    ],
+    deductOpenings: false,
+    base: (v) => n(v, 'length') * n(v, 'weightPerM'),
+    hint: 'ดูน้ำหนักต่อเมตรจากตารางเหล็กรูปพรรณ เช่น C-100×50×20×2.3 = 5.31 กก./ม.',
+  },
+  {
+    id: 'str-roof-purlin',
+    groupId: 'str-roof-frame',
+    no: 2,
+    name: 'แปหลังคา',
+    unit: 'kg',
+    formula: 'ความยาวรวม × น้ำหนักต่อเมตร',
+    inputs: [
+      metreInput('length', 'ความยาวรวม', 30, 0.5),
+      {
+        key: 'weightPerM',
+        label: 'น้ำหนักต่อเมตร',
+        unit: 'กก./ม.',
+        defaultValue: 2.25,
+        min: 0,
+        step: 0.01,
+      },
+    ],
+    deductOpenings: false,
+    base: (v) => n(v, 'length') * n(v, 'weightPerM'),
+  },
+  {
+    id: 'str-roof-paint',
+    groupId: 'str-roof-frame',
+    no: 3,
+    name: 'งานทาสีกันสนิมโครงหลังคา',
+    unit: 'm²',
+    formula: 'ความยาวรวม × เส้นรอบรูปหน้าตัด',
+    inputs: [
+      metreInput('length', 'ความยาวรวม', 20, 0.5),
+      metreInput('perimeter', 'เส้นรอบรูปหน้าตัด', 0.34, 0.01),
+    ],
+    deductOpenings: false,
+    base: (v) => n(v, 'length') * n(v, 'perimeter'),
+    hint: 'เส้นรอบรูปหน้าตัด = ผลรวมความยาวทุกด้านของหน้าตัดเหล็ก',
+  },
+
+  // 7. งานโครงสร้างบันได
+  {
+    id: 'str-stair-concrete',
+    groupId: 'str-stair',
+    no: 1,
+    name: 'โครงสร้างบันไดคอนกรีต',
+    unit: 'm³',
+    formula: 'ความกว้าง × ความยาวตามแนวลาด × ความหนาเฉลี่ย',
+    inputs: [
+      metreInput('width', 'ความกว้างบันได', 1.2),
+      metreInput('length', 'ความยาวตามแนวลาด', 4.5),
+      metreInput('thickness', 'ความหนาเฉลี่ย', 0.24, 0.01),
+    ],
+    perLevel: true,
+    deductOpenings: false,
+    base: (v) => n(v, 'width') * n(v, 'length') * n(v, 'thickness'),
+    hint: 'ความหนาเฉลี่ย = ความหนาพื้นเอียง + ลูกตั้ง ÷ 2 (คิดเนื้อขั้นบันไดรวมไว้แล้ว)',
+  },
+  {
+    id: 'str-stair-steel',
+    groupId: 'str-stair',
+    no: 2,
+    name: 'โครงสร้างบันไดเหล็ก',
+    unit: 'kg',
+    formula: 'ความยาวรวม × น้ำหนักต่อเมตร',
+    inputs: [
+      metreInput('length', 'ความยาวรวม', 12, 0.5),
+      {
+        key: 'weightPerM',
+        label: 'น้ำหนักต่อเมตร',
+        unit: 'กก./ม.',
+        defaultValue: 11.1,
+        min: 0,
+        step: 0.01,
+      },
+    ],
+    perLevel: true,
+    deductOpenings: false,
+    base: (v) => n(v, 'length') * n(v, 'weightPerM'),
+    hint: 'รวมแม่บันได ลูกนอน และเหล็กยึด — ดูน้ำหนักต่อเมตรจากตารางเหล็ก',
+  },
+];
+
+export const TAKEOFF_ITEMS: readonly TakeoffItemDef[] = [...STRUCTURE_ITEMS, ...WALL_ITEMS];
 
 export const takeoffCategory = (id: TakeoffCategoryId): TakeoffCategory | undefined =>
   TAKEOFF_CATEGORIES.find((c) => c.id === id);
@@ -445,10 +809,10 @@ export interface TakeoffLine {
   itemId: string;
   /** ตำแหน่ง/รายละเอียด เช่น "ผนังห้องนอน 1 ทิศเหนือ" */
   label: string;
+  /** ชั้นของงาน เช่น "ชั้น 2" — ใช้เฉพาะรายการที่ตั้ง `perLevel` ไว้ */
+  level?: string;
   values: Record<string, number>;
   openings: TakeoffOpening[];
-  /** จำนวนชุดที่เหมือนกันทุกประการ */
-  count: number;
   wastePercent: number;
   unitPrice?: number;
   notes?: string;
@@ -459,7 +823,7 @@ export interface TakeoffLineResult {
   baseQuantity: number;
   /** ปริมาณช่องเปิดที่หักออก (ต่อหนึ่งชุด) */
   deduction: number;
-  /** ปริมาณสุทธิ รวมจำนวนชุดและเผื่อเสียหายแล้ว */
+  /** ปริมาณสุทธิ รวมเผื่อเสียหายแล้ว */
   quantity: number;
   unit: QuantityUnit;
   amount?: number;

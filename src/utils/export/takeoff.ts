@@ -2,13 +2,17 @@ import * as ExcelJSNamespace from 'exceljs';
 import { saveAs } from 'file-saver';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import type { TakeoffReport } from '@/types';
+import type { TakeoffItemDef, TakeoffLine, TakeoffReport } from '@/types';
 import { fileTimestamp, formatDateTime, formatNumber, sanitiseFileName } from '../format';
 import { getLastAutoTableY, registerFont } from './pdf';
 
 type ExcelModule = typeof ExcelJSNamespace & { default?: typeof ExcelJSNamespace };
 const Excel: typeof ExcelJSNamespace =
   (ExcelJSNamespace as ExcelModule).default ?? ExcelJSNamespace;
+
+/** ชื่อรายการในไฟล์ส่งออก — ชั้นมาก่อน แล้วตามด้วยตำแหน่งที่ผู้ใช้พิมพ์ */
+const lineTitle = (line: TakeoffLine, item: TakeoffItemDef): string =>
+  [line.level, item.name, line.label].filter((part) => part && part.trim()).join(' — ');
 
 const HEADER_FILL = 'FF0EA5E9';
 const CATEGORY_FILL = 'FF1E293B';
@@ -88,10 +92,10 @@ export async function exportTakeoffToExcel(report: TakeoffReport): Promise<void>
       groupEntry.lines.forEach(({ line, item, result }, index) => {
         sheet.addRow({
           no: `${entry.category.no}.${groupEntry.group.no}.${index + 1}`,
-          description: line.label ? `${item.name} — ${line.label}` : item.name,
+          description: lineTitle(line, item),
           working: result.workingText,
           // รายการที่ยังไม่มีวิธีคิด ปล่อยช่องตัวเลขว่างไว้ ไม่ใส่ 0 ให้เข้าใจผิดว่าคิดแล้ว
-          unit: item.noteOnly ? '' : item.unit,
+          unit: item.noteOnly ? '' : (item.unitLabel ?? item.unit),
           quantity: item.noteOnly ? null : result.quantity,
           unitPrice: line.unitPrice ?? null,
           amount: result.amount ?? null,
@@ -211,9 +215,9 @@ export async function exportTakeoffToPdf(report: TakeoffReport): Promise<void> {
       groupEntry.lines.forEach(({ line, item, result }, index) => {
         body.push([
           `${entry.category.no}.${groupEntry.group.no}.${index + 1}`,
-          line.label ? `${item.name} — ${line.label}` : item.name,
+          lineTitle(line, item),
           result.workingText,
-          item.noteOnly ? '' : item.unit,
+          item.noteOnly ? '' : (item.unitLabel ?? item.unit),
           item.noteOnly ? '-' : formatNumber(result.quantity, 3),
           line.unitPrice !== undefined ? formatNumber(line.unitPrice, 2) : '-',
           result.amount !== undefined ? formatNumber(result.amount, 2) : '-',

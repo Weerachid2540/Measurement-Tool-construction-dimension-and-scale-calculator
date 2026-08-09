@@ -27,14 +27,13 @@ export const newTakeoffLine = (item: TakeoffItemDef, label = ''): TakeoffLine =>
   label,
   values: Object.fromEntries(item.inputs.map((input) => [input.key, input.defaultValue])),
   openings: [],
-  count: 1,
   wastePercent: 0,
 });
 
 /**
  * คำนวณปริมาณของหนึ่งแถว
  *
- *   ปริมาณ = (ฐานตามสูตร − ช่องเปิด × ตัวคูณด้าน) × จำนวนชุด × (1 + เผื่อเสียหาย)
+ *   ปริมาณ = (ฐานตามสูตร − ช่องเปิด × ตัวคูณด้าน) × (1 + เผื่อเสียหาย)
  *
  * ผลลัพธ์ไม่ติดลบ — ถ้าช่องเปิดใหญ่กว่าผนังแปลว่ากรอกผิด ให้เป็น 0 แทนที่จะหักกลับ
  */
@@ -57,9 +56,8 @@ export function computeTakeoffLine(line: TakeoffLine, item: TakeoffItemDef): Tak
   const deduction = openingTotal * factor;
 
   const net = Math.max(0, baseQuantity - deduction);
-  const count = Math.max(0, line.count);
   const waste = 1 + Math.max(0, line.wastePercent) / 100;
-  const quantity = net * count * waste;
+  const quantity = net * waste;
 
   return {
     baseQuantity,
@@ -84,10 +82,12 @@ function workingText(
   deduction: number,
   quantity: number,
 ): string {
-  const inputs = item.inputs
-    .filter((input) => !input.excludeFromWorking)
-    .map((input) => formatNumber(line.values[input.key] ?? 0, 2))
-    .join(' × ');
+  const inputs =
+    item.workingExpr?.(line.values) ??
+    item.inputs
+      .filter((input) => !input.excludeFromWorking)
+      .map((input) => formatNumber(line.values[input.key] ?? 0, 2))
+      .join(' × ');
   let text = `(${inputs})`;
 
   if (deduction > 0) {
@@ -99,13 +99,12 @@ function workingText(
     text += ` − (${parts.join(' + ')})${suffix}`;
   }
 
-  if (line.count !== 1) text += ` × ${formatNumber(line.count, 0)} ชุด`;
   if (line.wastePercent > 0) text += ` × เผื่อ ${formatNumber(line.wastePercent, 0)}%`;
 
   const netBefore = Math.max(0, baseQuantity - deduction);
   if (netBefore === 0 && baseQuantity > 0) text += ' → ช่องเปิดมากกว่าพื้นที่งาน ตรวจตัวเลขอีกครั้ง';
 
-  return `${text} = ${formatNumber(quantity, 3)} ${item.unit}`;
+  return `${text} = ${formatNumber(quantity, 3)} ${item.unitLabel ?? item.unit}`;
 }
 
 /** ยอดรวมของแถวทั้งหมด (เฉพาะแถวที่ใส่ราคาต่อหน่วยไว้จึงจะมีจำนวนเงิน) */

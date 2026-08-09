@@ -1311,6 +1311,17 @@
   flex: 1;
 }
 
+.mt-takeoff__level {
+  display: inline-block;
+  margin-right: var(--mt-space-2);
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--mt-accent) 18%, transparent);
+  color: var(--mt-accent);
+  font-size: var(--mt-text-xs);
+  font-weight: 600;
+}
+
 .mt-takeoff__line-name em {
   font-style: normal;
   color: var(--mt-text-faint);
@@ -1364,6 +1375,16 @@
 .mt-takeoff__link:hover {
   border-color: var(--mt-accent);
   text-decoration: underline;
+}
+
+.mt-takeoff__autocount {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mt-space-1);
+  align-items: flex-start;
+  padding: var(--mt-space-2);
+  border: 1px dashed var(--mt-border-strong);
+  border-radius: var(--mt-radius-sm);
 }
 
 .mt-takeoff__openings {

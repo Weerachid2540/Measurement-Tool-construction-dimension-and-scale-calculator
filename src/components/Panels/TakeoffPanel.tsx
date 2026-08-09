@@ -1,7 +1,13 @@
 import { useMemo, useState } from 'react';
 import type { TakeoffCategoryId, TakeoffLine, TakeoffItemDef } from '@/types';
 import { TAKEOFF_CATEGORIES, takeoffGroupsOf, takeoffItemsOf } from '@/types';
-import { useTakeoffStore, useUiStore } from '@/store';
+import {
+  selectAcceptedCount,
+  useAutoCountStore,
+  useMeasurementStore,
+  useTakeoffStore,
+  useUiStore,
+} from '@/store';
 import { Button, Field, Icon, NumberInput, Select, TextInput } from '@/components/common';
 import { buildTakeoffReport, computeTakeoffLine } from '@/utils/takeoff';
 import { formatCurrency, formatNumber } from '@/utils/format';
@@ -94,7 +100,7 @@ export function TakeoffPanel() {
                 <span>
                   {item.no}. {item.name}
                 </span>
-                <em>{item.noteOnly ? 'ยังไม่มีสูตร' : item.unit}</em>
+                <em>{item.noteOnly ? 'ยังไม่มีสูตร' : (item.unitLabel ?? item.unit)}</em>
               </button>
             ))}
           </div>
@@ -175,6 +181,15 @@ function TakeoffLineRow({ line, item }: { line: TakeoffLine; item: TakeoffItemDe
   const updateOpening = useTakeoffStore((s) => s.updateOpening);
   const removeOpening = useTakeoffStore((s) => s.removeOpening);
 
+  // จำนวนที่นับได้จากแบบ — ผลสดจากเครื่องมือนับอัตโนมัติก่อน ถ้าบันทึกไปแล้วค่อยนับจากจุดที่บันทึกไว้
+  const liveCount = useAutoCountStore(selectAcceptedCount);
+  const committedCount = useMeasurementStore((s) =>
+    s.measurements
+      .filter((m) => m.type === 'count' && m.page === s.currentPage)
+      .reduce((total, m) => total + m.points.length, 0),
+  );
+  const availableCount = liveCount || committedCount;
+
   const open = expandedId === line.id;
   const result = computeTakeoffLine(line, item);
 
@@ -187,11 +202,12 @@ function TakeoffLineRow({ line, item }: { line: TakeoffLine; item: TakeoffItemDe
       >
         <Icon name={open ? 'chevronDown' : 'chevronRight'} size={14} />
         <span className="mt-takeoff__line-name">
+          {line.level && <b className="mt-takeoff__level">{line.level}</b>}
           {item.name}
           {line.label && <em> — {line.label}</em>}
         </span>
         <span className="mt-takeoff__line-qty">
-          {item.noteOnly ? '—' : `${formatNumber(result.quantity, 3)} ${item.unit}`}
+          {item.noteOnly ? '—' : `${formatNumber(result.quantity, 3)} ${item.unitLabel ?? item.unit}`}
         </span>
       </button>
 
@@ -199,6 +215,16 @@ function TakeoffLineRow({ line, item }: { line: TakeoffLine; item: TakeoffItemDe
 
       {open && (
         <div className="mt-takeoff__editor">
+          {item.perLevel && (
+            <Field label="ชั้น" hint="พิมพ์เองได้ เช่น ชั้น 2 หรือ ชั้นดาดฟ้า">
+              <TextInput
+                value={line.level ?? ''}
+                placeholder="เช่น ชั้น 2"
+                onChange={(e) => updateLine(line.id, { level: e.target.value })}
+              />
+            </Field>
+          )}
+
           <Field label="ตำแหน่ง / รายละเอียด">
             <TextInput
               value={line.label}
@@ -221,6 +247,27 @@ function TakeoffLineRow({ line, item }: { line: TakeoffLine; item: TakeoffItemDe
             </a>
           )}
 
+          {item.pullAutoCount && (
+            <div className="mt-takeoff__autocount">
+              <Button
+                icon="count"
+                variant="ghost"
+                disabled={availableCount === 0}
+                onClick={() => setValue(line.id, 'quantity', availableCount)}
+              >
+                ดึงจำนวนจากการนับอัตโนมัติ
+                {availableCount > 0 ? ` (${availableCount})` : ''}
+              </Button>
+              <span className="mt-field__hint">
+                {availableCount === 0
+                  ? 'ยังไม่มีผลนับ — ไปแท็บ "นับอัตโนมัติ" ลากกรอบคลุมสัญลักษณ์เสาเข็ม 1 ตัว แล้วค้นหา'
+                  : liveCount > 0
+                    ? 'จากผลค้นหาล่าสุดที่ยังไม่ได้บันทึก'
+                    : 'จากจุดนับที่บันทึกไว้ในหน้านี้'}
+              </span>
+            </div>
+          )}
+
           {/* รายการที่ยังไม่มีวิธีคิด แสดงแค่ช่องตำแหน่งด้านบนกับปุ่มจัดการ */}
           {!item.noteOnly && (
           <div className="mt-grid-2">
@@ -236,16 +283,6 @@ function TakeoffLineRow({ line, item }: { line: TakeoffLine; item: TakeoffItemDe
                 />
               </Field>
             ))}
-
-            <Field label="จำนวนชุดที่เหมือนกัน" inline>
-              <NumberInput
-                value={line.count}
-                min={0}
-                step={1}
-                suffix="ชุด"
-                onValueChange={(count) => updateLine(line.id, { count })}
-              />
-            </Field>
 
             <Field label="เผื่อเสียหาย" inline>
               <NumberInput
@@ -338,14 +375,14 @@ function TakeoffLineRow({ line, item }: { line: TakeoffLine; item: TakeoffItemDe
             <div>
               <dt>ปริมาณก่อนหัก</dt>
               <dd>
-                {formatNumber(result.baseQuantity, 3)} {item.unit}
+                {formatNumber(result.baseQuantity, 3)} {item.unitLabel ?? item.unit}
               </dd>
             </div>
             {result.deduction > 0 && (
               <div>
                 <dt>หักช่องเปิด</dt>
                 <dd>
-                  −{formatNumber(result.deduction, 3)} {item.unit}
+                  −{formatNumber(result.deduction, 3)} {item.unitLabel ?? item.unit}
                 </dd>
               </div>
             )}
@@ -353,7 +390,7 @@ function TakeoffLineRow({ line, item }: { line: TakeoffLine; item: TakeoffItemDe
               <dt>ปริมาณสุทธิ</dt>
               <dd>
                 <strong>
-                  {formatNumber(result.quantity, 3)} {item.unit}
+                  {formatNumber(result.quantity, 3)} {item.unitLabel ?? item.unit}
                 </strong>
               </dd>
             </div>
