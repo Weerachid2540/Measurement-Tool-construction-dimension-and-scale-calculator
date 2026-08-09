@@ -127,7 +127,9 @@ export function buildTakeoffReport(lines: TakeoffLine[], projectName: string): T
             if (!item || item.groupId !== group.id) return null;
             return { line, item, result: computeTakeoffLine(line, item) };
           })
-          .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+          .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
+          // เรียงตามลำดับข้อในหมวด ไม่ใช่ลำดับที่ผู้ใช้กดเพิ่ม เพื่อให้อ่านเหมือน BOQ
+          .sort((a, b) => a.item.no - b.item.no);
 
         return {
           group,

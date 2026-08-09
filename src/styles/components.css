@@ -1229,6 +1229,16 @@
   cursor: pointer;
 }
 
+.mt-takeoff__section {
+  margin: var(--mt-space-2) 0 var(--mt-space-1);
+  font-size: var(--mt-text-sm);
+  color: var(--mt-text-muted);
+}
+
+.mt-takeoff__add-item.is-nested {
+  margin-left: var(--mt-space-3);
+}
+
 .mt-takeoff__add-item:hover {
   background: var(--mt-surface-hover);
   border-color: var(--mt-border-strong);

@@ -88,20 +88,25 @@ export function TakeoffPanel() {
           </p>
         ) : (
           <div className="mt-takeoff__add">
-            {items.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className="mt-takeoff__add-item"
-                onClick={() => addLine(item.id)}
-                title={item.formula}
-              >
-                <Icon name="plus" size={14} />
-                <span>
-                  {item.no}. {item.name}
-                </span>
-                <em>{item.noteOnly ? 'ยังไม่มีสูตร' : (item.unitLabel ?? item.unit)}</em>
-              </button>
+            {items.map((item, index) => (
+              <div key={item.id}>
+                {/* หัวข้อย่อยขึ้นครั้งเดียวที่รายการแรกของกลุ่ม เช่น "งานดิน" คลุมขุด-ถม-ขนทิ้ง */}
+                {item.section && item.section !== items[index - 1]?.section && (
+                  <h4 className="mt-takeoff__section">{item.section}</h4>
+                )}
+                <button
+                  type="button"
+                  className={`mt-takeoff__add-item ${item.section ? 'is-nested' : ''}`}
+                  onClick={() => addLine(item.id)}
+                  title={item.formula}
+                >
+                  <Icon name="plus" size={14} />
+                  <span>
+                    {item.code ?? `${item.no}.`} {item.name}
+                  </span>
+                  <em>{item.noteOnly ? 'ยังไม่มีสูตร' : (item.unitLabel ?? item.unit)}</em>
+                </button>
+              </div>
             ))}
           </div>
         )}
@@ -132,8 +137,13 @@ export function TakeoffPanel() {
                     </span>
                     <span>{groupAmount > 0 ? formatCurrency(groupAmount) : '—'}</span>
                   </div>
-                  {groupLines.map(({ line, item }) => (
-                    <TakeoffLineRow key={line.id} line={line} item={item} />
+                  {groupLines.map(({ line, item }, index) => (
+                    <div key={line.id}>
+                      {item.section && item.section !== groupLines[index - 1]?.item.section && (
+                        <h4 className="mt-takeoff__section">{item.section}</h4>
+                      )}
+                      <TakeoffLineRow line={line} item={item} />
+                    </div>
                   ))}
                 </div>
               ))}
