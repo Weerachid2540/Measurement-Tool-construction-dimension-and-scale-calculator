@@ -30,6 +30,8 @@ export interface CanvasInteraction {
   onDblClick: () => void;
   onContextMenu: (e: KonvaEventObject<PointerEvent>) => void;
   onWheel: (e: KonvaEventObject<WheelEvent>) => void;
+  onTouchMove: (e: KonvaEventObject<TouchEvent>) => void;
+  onTouchEnd: (e: KonvaEventObject<TouchEvent>) => void;
   /** Applies the active snapping rules to an arbitrary image-space point. */
   snapPoint: (raw: Point, shiftKey: boolean) => Point;
 }
@@ -42,6 +44,9 @@ export function useCanvasInteraction(
 ): CanvasInteraction {
   const pressOrigin = useRef<{ x: number; y: number } | null>(null);
   const marqueeActive = useRef(false);
+  const pinch = useRef<{ distance: number; center: Point } | null>(null);
+  /** จริงระหว่างและหลังการหยิบสองนิ้ว จนกว่าจะยกนิ้วครบ — กันไม่ให้กลายเป็นคลิกวางจุด */
+  const pinchActive = useRef(false);
   const openModal = useUiStore((s) => s.openModal);
 
   const readPointer = useCallback((): Point | null => {
@@ -180,6 +185,8 @@ export function useCanvasInteraction(
         return;
       }
 
+      if (pinchActive.current) return;
+
       // A drag (panning) should never place a point.
       if (origin && pointer && Math.hypot(pointer.x - origin.x, pointer.y - origin.y) > CLICK_SLOP) {
         return;
@@ -211,6 +218,57 @@ export function useCanvasInteraction(
     [finishDraft],
   );
 
+  /**
+   * ซูมและเลื่อนด้วยสองนิ้วบนจอสัมผัส — ล้อเมาส์ใช้ไม่ได้บนมือถือ/แท็บเล็ต
+   * นิ้วเดียวยังทำงานตามเครื่องมือที่เลือกอยู่ (วาด เลือก หรือลากเลื่อนเมื่ออยู่โหมด pan)
+   */
+  const onTouchMove = useCallback(
+    (e: KonvaEventObject<TouchEvent>) => {
+      const touches = e.evt.touches;
+      if (touches.length < 2) {
+        pinch.current = null;
+        return;
+      }
+
+      e.evt.preventDefault();
+      const stage = stageRef.current;
+      if (!stage) return;
+
+      // โหมด pan ปล่อยให้ Konva ลากเวทีเองอยู่ ต้องหยุดก่อนไม่งั้นภาพเลื่อนซ้อนสองชั้น
+      if (stage.isDragging()) stage.stopDrag();
+
+      const box = stage.container().getBoundingClientRect();
+      const a = { x: touches[0].clientX - box.left, y: touches[0].clientY - box.top };
+      const b = { x: touches[1].clientX - box.left, y: touches[1].clientY - box.top };
+      const distance = Math.hypot(b.x - a.x, b.y - a.y);
+      const center = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+
+      const previous = pinch.current;
+      pinch.current = { distance, center };
+      pinchActive.current = true;
+      if (!previous || previous.distance === 0) return;
+
+      const store = useMeasurementStore.getState();
+
+      // จุดกึ่งกลางสองนิ้วเลื่อนไปเท่าไร ภาพเลื่อนตามเท่านั้น
+      const dx = center.x - previous.center.x;
+      const dy = center.y - previous.center.y;
+      if (dx !== 0 || dy !== 0) store.setView({ x: store.view.x + dx, y: store.view.y + dy });
+
+      const factor = distance / previous.distance;
+      const next = useMeasurementStore.getState().view.zoom * factor;
+      if (next < ZOOM_LIMITS.min || next > ZOOM_LIMITS.max) return;
+      store.zoomBy(factor, center);
+    },
+    [stageRef],
+  );
+
+  const onTouchEnd = useCallback((e: KonvaEventObject<TouchEvent>) => {
+    pinch.current = null;
+    // ปล่อยนิ้วครบแล้วค่อยเปิดให้คลิกวางจุดได้อีกครั้ง ไม่งั้นปลายนิ้วที่ยกทีหลังจะกลายเป็นคลิก
+    if (e.evt.touches.length === 0) pinchActive.current = false;
+  }, []);
+
   const onWheel = useCallback(
     (e: KonvaEventObject<WheelEvent>) => {
       e.evt.preventDefault();
@@ -234,6 +292,8 @@ export function useCanvasInteraction(
     onDblClick,
     onContextMenu,
     onWheel,
+    onTouchMove,
+    onTouchEnd,
     snapPoint,
   };
 }

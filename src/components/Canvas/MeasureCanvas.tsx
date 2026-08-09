@@ -126,6 +126,8 @@ export function MeasureCanvas() {
         onDblTap={interaction.onDblClick}
         onContextMenu={interaction.onContextMenu}
         onWheel={interaction.onWheel}
+        onTouchMove={interaction.onTouchMove}
+        onTouchEnd={interaction.onTouchEnd}
       >
         <Layer listening>
           {image && (

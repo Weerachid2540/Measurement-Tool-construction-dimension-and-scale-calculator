@@ -302,6 +302,24 @@
   color: var(--mt-text);
 }
 
+/* บนมือถือพื้นที่แนวตั้งเหลือน้อย ย่อกล่องอัปโหลดและตัดคำอธิบายที่ไม่จำเป็นออก */
+@media (max-width: 600px) {
+  .mt-dropzone--full {
+    margin: var(--mt-space-3);
+    padding: var(--mt-space-4);
+    gap: var(--mt-space-2);
+    overflow-y: auto;
+  }
+
+  .mt-dropzone--full h2 {
+    font-size: var(--mt-text-md);
+  }
+
+  .mt-dropzone__hints {
+    display: none;
+  }
+}
+
 .mt-dropzone--full.is-dragging {
   border-color: var(--mt-accent);
   background: color-mix(in srgb, var(--mt-accent) 10%, var(--mt-bg-elevated));

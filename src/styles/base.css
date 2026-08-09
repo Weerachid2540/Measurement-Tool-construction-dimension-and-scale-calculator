@@ -11,6 +11,15 @@ body,
   margin: 0;
 }
 
+/* iOS ซ่อน/โผล่แถบ URL แล้ว 100% จะสูงเกินจอ — dvh วัดตามพื้นที่ที่เห็นจริง */
+@supports (height: 100dvh) {
+  html,
+  body,
+  #root {
+    height: 100dvh;
+  }
+}
+
 body {
   font-family: var(--mt-font-sans);
   font-size: var(--mt-text-md);

@@ -113,7 +113,10 @@
   flex-direction: column;
   flex: 1;
   min-width: 0;
+  min-height: 0;
   background: var(--mt-canvas-bg);
+  /* จอเตี้ยๆ เนื้อหาในพื้นที่วาดต้องถูกตัด ไม่ใช่ทะลุไปทับแผงด้านล่าง */
+  overflow: hidden;
 }
 
 .mt-workspace__stage {
@@ -121,6 +124,7 @@
   flex: 1;
   min-height: 0;
   display: flex;
+  overflow: hidden;
 }
 
 .mt-canvas {
@@ -386,7 +390,8 @@
     gap: var(--mt-space-2);
   }
 
-  .mt-header__brand span {
+  /* ซ่อนเฉพาะคำโปรยใต้ชื่อ — ถ้าจับทุก span จะกลืนชื่อแอปไปด้วย (ชื่อก็เป็น span) */
+  .mt-header__brand > div > span {
     display: none;
   }
 
@@ -421,17 +426,141 @@
   }
 
   .mt-workspace {
-    min-height: 55vh;
+    flex: 1 1 auto;
+    min-height: 38dvh;
   }
 
-  .mt-panel {
+  /* จอเล็กวางแผงไว้ใต้แบบ — `is-wide` ของแท็บถอดแบบต้องถูกลบทิ้ง ไม่งั้นกว้างเกินจอ */
+  .mt-panel,
+  .mt-panel.is-wide {
     width: 100%;
+    flex: 0 1 auto;
     border-left: none;
     border-top: 1px solid var(--mt-border);
-    max-height: 45vh;
+    max-height: 48dvh;
+  }
+
+  /* ถอดแบบเป็นงานกรอกตัวเลขล้วน ให้พื้นที่มากกว่าแท็บอื่น */
+  .mt-panel.is-wide {
+    max-height: 58dvh;
+  }
+
+  .mt-panel.is-collapsed,
+  .mt-panel.is-wide.is-collapsed {
+    width: 100%;
+    max-height: none;
+  }
+
+  /* แท็บ 6 อันเรียงไม่พอในจอมือถือ ให้เลื่อนแนวนอนแทนที่จะบีบจนอ่านไม่ออก */
+  .mt-panel__tabs {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .mt-panel__tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mt-panel__tab {
+    flex: 0 0 auto;
+  }
+
+  /* แผงอยู่ด้านล่างแล้ว ลูกศรย่อ/ขยายจึงต้องชี้ขึ้น-ลง ไม่ใช่ซ้าย-ขวา */
+  .mt-panel__collapse svg {
+    transform: rotate(90deg);
   }
 
   .mt-statusbar__meta {
     display: none;
+  }
+}
+
+/* ------------------------------ โทรศัพท์แนวตั้ง ------------------------------ */
+
+@media (max-width: 600px) {
+  .mt-header {
+    padding-left: max(var(--mt-space-3), env(safe-area-inset-left));
+    padding-right: max(var(--mt-space-3), env(safe-area-inset-right));
+  }
+
+  .mt-header__logo {
+    height: 28px;
+  }
+
+  .mt-header__session .mt-input {
+    max-width: none;
+  }
+
+  .mt-statusbar {
+    padding-bottom: max(var(--mt-space-1), env(safe-area-inset-bottom));
+  }
+
+  /* ช่องกรอกสองคอลัมน์แคบเกินไปบนมือถือ */
+  .mt-grid-2,
+  .mt-panel.is-wide .mt-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  /* แถวช่องเปิด: ชื่อขึ้นบรรทัดบนเต็มความกว้าง เหลือ กว้าง/สูง/จำนวน/ลบ อยู่บรรทัดล่าง */
+  .mt-takeoff__opening {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+    gap: var(--mt-space-1);
+  }
+
+  .mt-takeoff__opening > *:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .mt-takeoff__opening--head {
+    padding-right: 0;
+  }
+
+  .mt-panel-footer {
+    flex-wrap: wrap;
+  }
+
+  /* แถบเครื่องมือบนแบบเดิมตัดขึ้นบรรทัดใหม่ 3 แถว กินที่จนพื้นที่วาดแทบไม่เหลือ */
+  .mt-canvas-toolbar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: var(--mt-space-3);
+    padding: var(--mt-space-2);
+  }
+
+  .mt-canvas-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mt-canvas-toolbar__section {
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+  }
+
+  .mt-canvas-toolbar__section--end {
+    margin-left: var(--mt-space-2);
+  }
+}
+
+/* --------------------------- นิ้วแทนเมาส์ (จอสัมผัส) --------------------------- */
+
+@media (pointer: coarse) {
+  /* Safari บน iOS ซูมหน้าเองถ้าช่องกรอกฟอนต์เล็กกว่า 16px */
+  .mt-input {
+    font-size: 16px;
+  }
+
+  .mt-tool,
+  .mt-btn,
+  .mt-icon-btn,
+  .mt-panel__tab,
+  .mt-takeoff__add-item,
+  .mt-takeoff__line-head {
+    min-height: 44px;
+  }
+
+  .mt-swatch {
+    width: 26px;
+    height: 26px;
   }
 }
