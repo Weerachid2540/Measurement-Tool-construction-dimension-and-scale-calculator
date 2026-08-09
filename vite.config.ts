@@ -21,10 +21,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg', 'icon-maskable.svg'],
       manifest: {
-        name: 'Measurement Tool — Construction Dimension & Scale Calculator',
-        short_name: 'Measure',
+        name: 'Cost Estimation and Quantity Takeoff Services',
+        short_name: 'Cost & Takeoff',
         description:
-          'วัดขนาด พื้นที่ มุม และปริมาณวัสดุจากแบบก่อสร้าง พร้อมส่งออก BOQ เป็น Excel/PDF',
+          'ถอดแบบประมาณราคา วัดขนาด พื้นที่ และปริมาณวัสดุจากแบบก่อสร้าง พร้อมส่งออก BOQ เป็น Excel/PDF',
         lang: 'th',
         theme_color: '#0ea5e9',
         background_color: '#0b1220',

@@ -49,7 +49,7 @@ export async function exportBoqToExcel(
   scale: ScaleSettings,
 ): Promise<void> {
   const workbook = new Excel.Workbook();
-  workbook.creator = 'Measurement Tool';
+  workbook.creator = 'Cost Estimation and Quantity Takeoff Services';
   workbook.created = new Date();
 
   buildBoqSheet(workbook, report);
@@ -235,7 +235,7 @@ function buildMeasurementSheet(
 /** Flat export of the whole saved history — one row per session. */
 export async function exportHistoryToExcel(sessions: MeasurementSession[]): Promise<void> {
   const workbook = new Excel.Workbook();
-  workbook.creator = 'Measurement Tool';
+  workbook.creator = 'Cost Estimation and Quantity Takeoff Services';
   const sheet = workbook.addWorksheet('History');
   sheet.columns = [
     { key: 'name', width: 28 },

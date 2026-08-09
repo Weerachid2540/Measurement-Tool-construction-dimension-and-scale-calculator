@@ -17,7 +17,7 @@ const GROUP_FILL = 'FFE2E8F0';
 /** ตารางถอดแบบเป็นไฟล์ Excel — เรียงตามหมวดหลัก → หมวดงาน → รายการ */
 export async function exportTakeoffToExcel(report: TakeoffReport): Promise<void> {
   const workbook = new Excel.Workbook();
-  workbook.creator = 'Measurement Tool';
+  workbook.creator = 'Cost Estimation and Quantity Takeoff Services';
   workbook.created = new Date();
 
   const sheet = workbook.addWorksheet('ถอดแบบ', {

@@ -31,8 +31,26 @@
 }
 
 .mt-header__brand strong {
-  font-size: var(--mt-text-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--mt-space-2);
+  font-size: var(--mt-text-md);
   letter-spacing: -0.01em;
+}
+
+.mt-header__name--short {
+  display: none;
+}
+
+@media (max-width: 1180px) {
+  .mt-header__name {
+    display: none;
+  }
+
+  .mt-header__name--short {
+    display: inline;
+    font-size: var(--mt-text-lg);
+  }
 }
 
 .mt-header__brand span {

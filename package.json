@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.4.0",
   "type": "module",
-  "description": "Construction Dimension & Scale Calculator — 2D/3D measurement, scale calibration and BOQ export",
+  "description": "Cost Estimation and Quantity Takeoff Services — quantity take-off, 2D/3D measurement, scale calibration and BOQ export",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

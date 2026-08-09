@@ -21,7 +21,9 @@ export function Header() {
         <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" width={28} height={28} />
         <div>
           <strong>
-            Measurement Tool
+            {/* จอแคบสลับไปใช้ชื่อย่อ ไม่งั้นชื่อเต็มเบียดช่องชื่อการวัดจนใช้ไม่ได้ */}
+            <span className="mt-header__name">Cost Estimation and Quantity Takeoff Services</span>
+            <span className="mt-header__name--short">Cost &amp; Takeoff</span>
             <button
               type="button"
               className="mt-version"
@@ -31,7 +33,7 @@ export function Header() {
               v{__APP_VERSION__}
             </button>
           </strong>
-          <span>Construction Dimension &amp; Scale Calculator</span>
+          <span>ถอดแบบประมาณราคา · วัดขนาดจากแบบก่อสร้าง</span>
         </div>
       </div>
 

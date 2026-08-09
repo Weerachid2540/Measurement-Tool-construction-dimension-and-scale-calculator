@@ -67,11 +67,11 @@ export function AboutModal() {
     >
       <div className="mt-about">
         <div className="mt-about__head">
-          <strong>Measurement Tool</strong>
+          <strong>Cost Estimation and Quantity Takeoff Services</strong>
           <span className="mt-badge-version">v{__APP_VERSION__}</span>
         </div>
         <p className="mt-muted">
-          Construction Dimension &amp; Scale Calculator · build เมื่อ{' '}
+          ถอดแบบประมาณราคา · วัดขนาดจากแบบก่อสร้าง · build เมื่อ{' '}
           {formatDateTime(Date.parse(__BUILD_DATE__))}
         </p>
         <p className="mt-muted">
