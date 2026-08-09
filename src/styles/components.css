@@ -124,6 +124,13 @@
   color: var(--mt-text-muted);
 }
 
+.mt-pager select {
+  width: auto;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  font-size: var(--mt-text-sm);
+}
+
 /* ----------------------------------- forms ---------------------------------- */
 
 .mt-field {

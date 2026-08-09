@@ -53,7 +53,7 @@ export function useCanvasInteraction(
 
   const snapPoint = useCallback(
     (raw: Point, shiftKey: boolean): Point => {
-      const { grid, snap, scale, draft, view } = useMeasurementStore.getState();
+      const { grid, snap, scale, draft, view, activeTool } = useMeasurementStore.getState();
       let point = raw;
 
       // 1. Existing vertices win — they keep chained measurements watertight.
@@ -74,7 +74,13 @@ export function useCanvasInteraction(
         }
       }
 
-      // 3. Ortho/45° constraint relative to the previous point.
+      // 3. ปรับเทียบมาตราส่วนล็อกแนวนอน/แนวตั้งเสมอ — ระยะที่ทราบค่าบนแบบแทบทั้งหมดเป็นเส้นตรง
+      //    เอียงไปไม่กี่พิกเซลก็ทำให้มาตราส่วนคลาดทั้งไฟล์ กด Shift ถ้าต้องปรับเทียบกับเส้นเฉียง
+      if (activeTool === 'calibrate' && draft.length > 0) {
+        return shiftKey ? point : snapToAngle(draft[0], point, 90);
+      }
+
+      // 4. Ortho/45° constraint relative to the previous point.
       if (shiftKey && snap.orthoWithShift && draft.length > 0) {
         point = snapToAngle(draft[draft.length - 1], point, 45);
       }

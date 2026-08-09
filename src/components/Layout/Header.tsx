@@ -18,7 +18,11 @@ export function Header() {
   return (
     <header className="mt-header">
       <div className="mt-header__brand">
-        <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" width={28} height={28} />
+        <img
+          className="mt-header__logo"
+          src={`${import.meta.env.BASE_URL}logo-crystal.jpg`}
+          alt="Crystal Engineering Corporation"
+        />
         <div>
           <strong>
             {/* จอแคบสลับไปใช้ชื่อย่อ ไม่งั้นชื่อเต็มเบียดช่องชื่อการวัดจนใช้ไม่ได้ */}

@@ -1,6 +1,6 @@
 import { useMeasurementStore, useUiStore, selectCanRedo, selectCanUndo } from '@/store';
 import { useDocumentLoader } from '@/hooks';
-import { Button, Checkbox, Icon, NumberInput } from '@/components/common';
+import { Button, Checkbox, Icon, NumberInput, Select } from '@/components/common';
 import { formatNumber } from '@/utils/format';
 import { ScaleControl } from './ScaleControl';
 
@@ -94,9 +94,16 @@ export function CanvasToolbar() {
               onClick={() => void goToPage(currentPage - 1)}
               title="หน้าก่อนหน้า"
             />
-            <span>
-              หน้า {currentPage} / {doc.pageCount}
-            </span>
+            {/* เลือกหน้าตรงๆ ได้ ไม่ต้องกดลูกศรทีละหน้าในไฟล์แบบที่มีหลายสิบหน้า */}
+            <Select
+              value={String(currentPage)}
+              options={Array.from({ length: doc.pageCount }, (_, i) => ({
+                value: String(i + 1),
+                label: `หน้า ${i + 1} / ${doc.pageCount}`,
+              }))}
+              onValueChange={(value) => void goToPage(Number.parseInt(value, 10))}
+              aria-label="เลือกหน้า"
+            />
             <Button
               icon="chevronRight"
               iconOnly

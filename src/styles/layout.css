@@ -24,6 +24,13 @@
   gap: var(--mt-space-3);
 }
 
+.mt-header__logo {
+  height: 36px;
+  width: auto;
+  border-radius: var(--mt-radius-sm);
+  flex-shrink: 0;
+}
+
 .mt-header__brand div {
   display: flex;
   flex-direction: column;
