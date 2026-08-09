@@ -209,6 +209,17 @@ function TakeoffLineRow({ line, item }: { line: TakeoffLine; item: TakeoffItemDe
 
           {!item.noteOnly && <p className="mt-takeoff__formula">สูตร: {item.formula}</p>}
           {item.hint && <p className="mt-field__hint">{item.hint}</p>}
+          {item.link && (
+            <a
+              className="mt-takeoff__link"
+              href={item.link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Icon name="calibrate" size={14} />
+              <span>{item.link.label}</span>
+            </a>
+          )}
 
           {/* รายการที่ยังไม่มีวิธีคิด แสดงแค่ช่องตำแหน่งด้านบนกับปุ่มจัดการ */}
           {!item.noteOnly && (

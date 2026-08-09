@@ -1340,6 +1340,25 @@
   line-height: 1.5;
 }
 
+.mt-takeoff__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mt-space-2);
+  align-self: flex-start;
+  padding: var(--mt-space-2);
+  border: 1px solid var(--mt-border);
+  border-radius: var(--mt-radius-sm);
+  background: var(--mt-bg-sunken);
+  color: var(--mt-accent);
+  font-size: var(--mt-text-xs);
+  text-decoration: none;
+}
+
+.mt-takeoff__link:hover {
+  border-color: var(--mt-accent);
+  text-decoration: underline;
+}
+
 .mt-takeoff__openings {
   display: flex;
   flex-direction: column;

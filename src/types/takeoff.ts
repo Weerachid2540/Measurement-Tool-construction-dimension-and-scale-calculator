@@ -124,6 +124,8 @@ export interface TakeoffItemDef {
   openingFactor?: (v: Record<string, number>) => number;
   components?: readonly TakeoffComponent[];
   hint?: string;
+  /** ลิงก์อ้างอิงภายนอก เช่น เครื่องคำนวณของผู้ผลิต — เปิดในแท็บใหม่ */
+  link?: { url: string; label: string };
 }
 
 const n = (v: Record<string, number>, key: string): number => {
@@ -294,6 +296,10 @@ const WALL_ITEMS: readonly TakeoffItemDef[] = [
       { label: 'โครงคร่าว', perUnit: 3.2, unit: 'ม.' },
     ],
     hint: 'นับพื้นที่ตามจำนวนด้านที่ปิดแผ่น — ผนังปิดสองด้านคิด 2 เท่า',
+    link: {
+      url: 'https://furringline.com/calculator/',
+      label: 'เครื่องคำนวณปริมาณของและราคาเบื้องต้น (furringline.com)',
+    },
   },
   {
     id: 'wall-plaster-brick',
