@@ -53,11 +53,17 @@ export function BoqPanel() {
     }
     try {
       setBusy('กำลังสร้างไฟล์ PDF…');
-      const { exportBoqToPdf } = await import('@/utils/export');
+      const { exportBoqToPdf, isThaiFontLoaded } = await import('@/utils/export');
       await exportBoqToPdf(report, {
         snapshot: includeSnapshot ? getStageSnapshot() : undefined,
       });
-      notify('ส่งออก PDF สำเร็จ', 'success');
+      // ไฟล์ยังออกได้ แต่ภาษาไทยจะอ่านไม่ออก ต้องบอกก่อนผู้ใช้ส่งให้ลูกค้า
+      notify(
+        isThaiFontLoaded()
+          ? 'ส่งออก PDF สำเร็จ'
+          : 'ไม่พบฟอนต์ไทย — ข้อความไทยใน PDF จะเพี้ยน (ใช้ Excel แทนได้)',
+        isThaiFontLoaded() ? 'success' : 'error',
+      );
     } catch (error) {
       notify(error instanceof Error ? error.message : 'ส่งออก PDF ไม่สำเร็จ', 'error');
     } finally {

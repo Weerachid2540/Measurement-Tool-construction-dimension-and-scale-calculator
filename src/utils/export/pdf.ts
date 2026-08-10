@@ -8,24 +8,31 @@ import { fileTimestamp, formatDateTime, formatNumber, sanitiseFileName } from '.
  * `public/fonts/Sarabun-Regular.ttf` and it is picked up automatically;
  * without it we fall back to Helvetica (Latin text still renders fine).
  */
-const THAI_FONT_URL = `${import.meta.env.BASE_URL}fonts/Sarabun-Regular.ttf`;
 const THAI_FONT_NAME = 'Sarabun';
+const THAI_FONT_URL = `${import.meta.env.BASE_URL}fonts/Sarabun-Regular.ttf`;
+const THAI_FONT_BOLD_URL = `${import.meta.env.BASE_URL}fonts/Sarabun-Bold.ttf`;
 
-let cachedFontBase64: string | null | undefined;
+const fontCache = new Map<string, string | null>();
+let thaiFontLoaded = false;
 
-async function fetchThaiFont(): Promise<string | null> {
-  if (cachedFontBase64 !== undefined) return cachedFontBase64;
+/** จริงเมื่อไฟล์ล่าสุดฝังฟอนต์ไทยได้ — ใช้เตือนผู้ใช้ว่าไฟล์ที่ได้จะอ่านภาษาไทยไม่ออก */
+export const isThaiFontLoaded = (): boolean => thaiFontLoaded;
+
+async function fetchFont(url: string): Promise<string | null> {
+  const cached = fontCache.get(url);
+  if (cached !== undefined) return cached;
+  let result: string | null = null;
   try {
-    const response = await fetch(THAI_FONT_URL);
-    if (!response.ok) {
-      cachedFontBase64 = null;
-      return null;
+    const response = await fetch(url);
+    // เสิร์ฟเวอร์สแตติกบางตัวตอบ index.html เมื่อไม่พบไฟล์ จึงต้องเช็กชนิดข้อมูลด้วย
+    if (response.ok && !response.headers.get('content-type')?.includes('text/html')) {
+      result = arrayBufferToBase64(await response.arrayBuffer());
     }
-    cachedFontBase64 = arrayBufferToBase64(await response.arrayBuffer());
   } catch {
-    cachedFontBase64 = null;
+    result = null;
   }
-  return cachedFontBase64;
+  fontCache.set(url, result);
+  return result;
 }
 
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
@@ -39,11 +46,24 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 }
 
 export async function registerFont(doc: jsPDF): Promise<string> {
-  const base64 = await fetchThaiFont();
-  if (!base64) return 'helvetica';
-  doc.addFileToVFS(`${THAI_FONT_NAME}.ttf`, base64);
+  const [regular, bold] = await Promise.all([
+    fetchFont(THAI_FONT_URL),
+    fetchFont(THAI_FONT_BOLD_URL),
+  ]);
+
+  if (!regular) {
+    thaiFontLoaded = false;
+    return 'helvetica';
+  }
+
+  doc.addFileToVFS(`${THAI_FONT_NAME}.ttf`, regular);
   doc.addFont(`${THAI_FONT_NAME}.ttf`, THAI_FONT_NAME, 'normal');
-  doc.addFont(`${THAI_FONT_NAME}.ttf`, THAI_FONT_NAME, 'bold');
+
+  // ไม่มีตัวหนาก็ใช้ตัวปกติแทน ดีกว่าให้ jsPDF สลับไปฟอนต์ละตินตอนสั่ง bold
+  doc.addFileToVFS(`${THAI_FONT_NAME}-Bold.ttf`, bold ?? regular);
+  doc.addFont(`${THAI_FONT_NAME}-Bold.ttf`, THAI_FONT_NAME, 'bold');
+
+  thaiFontLoaded = true;
   return THAI_FONT_NAME;
 }
 

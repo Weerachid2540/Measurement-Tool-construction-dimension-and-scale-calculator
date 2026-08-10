@@ -47,9 +47,19 @@ export function TakeoffPanel() {
     }
     try {
       setBusy(kind === 'excel' ? 'กำลังสร้างไฟล์ Excel…' : 'กำลังสร้างไฟล์ PDF…');
-      const { exportTakeoffToExcel, exportTakeoffToPdf } = await import('@/utils/export');
-      if (kind === 'excel') await exportTakeoffToExcel(report);
-      else await exportTakeoffToPdf(report);
+      const { exportTakeoffToExcel, exportTakeoffToPdf, isThaiFontLoaded } = await import(
+        '@/utils/export'
+      );
+      if (kind === 'excel') {
+        await exportTakeoffToExcel(report);
+      } else {
+        await exportTakeoffToPdf(report);
+        // ไฟล์ยังออกได้ แต่ภาษาไทยจะอ่านไม่ออก ต้องบอกก่อนผู้ใช้ส่งให้ลูกค้า
+        if (!isThaiFontLoaded()) {
+          notify('ไม่พบฟอนต์ไทย — ข้อความไทยใน PDF จะเพี้ยน (ใช้ Excel แทนได้)', 'error');
+          return;
+        }
+      }
       notify(`ส่งออก ${kind === 'excel' ? 'Excel' : 'PDF'} สำเร็จ`, 'success');
     } catch (error) {
       notify(error instanceof Error ? error.message : 'ส่งออกไม่สำเร็จ', 'error');
