@@ -204,6 +204,14 @@ const brickPlasterBagsPerSqm = (v: Record<string, number>): number => {
 const AAC_PLASTER_COVERAGE_10MM = 2.7;
 
 /**
+ * ปูนก่อสำเร็จ ถุง 50 กก. ก่อได้กี่ตารางเมตร (ใช้ค่ากลางของช่วงที่ใช้จริงหน้างาน)
+ * อิฐมอญ 1.1–1.5 ตร.ม. · คอนกรีตบล็อก 2.5–2.8 ตร.ม.
+ * ผนังอิฐมอญเต็มแผ่นใช้ปูนสองเท่าของครึ่งแผ่น พื้นที่ต่อถุงจึงเหลือครึ่งเดียว
+ */
+const BRICK_MORTAR_COVERAGE = 1.3;
+const CMU_MORTAR_COVERAGE = 2.65;
+
+/**
  * รายการที่ยังไม่ตกลงวิธีคิด — มีแต่ช่องตำแหน่ง/รายละเอียดไว้จดไปก่อน
  * ไม่คิดปริมาณและไม่เข้ายอดเงิน จนกว่าจะใส่สูตรให้
  */
@@ -293,7 +301,11 @@ const WALL_ITEMS: readonly TakeoffItemDef[] = [
     base: wallArea,
     components: [
       { label: 'อิฐมอญ', perUnit: 138, unit: 'ก้อน' },
-      { label: 'ปูนก่อสำเร็จ', perUnit: 0.9, unit: 'ถุง' },
+      {
+        label: `ปูนก่อสำเร็จ 50 กก. (1 ถุง ≈ ${BRICK_MORTAR_COVERAGE} ตร.ม.)`,
+        perUnit: 1 / BRICK_MORTAR_COVERAGE,
+        unit: 'ถุง',
+      },
     ],
   },
   {
@@ -308,7 +320,11 @@ const WALL_ITEMS: readonly TakeoffItemDef[] = [
     base: wallArea,
     components: [
       { label: 'อิฐมอญ', perUnit: 276, unit: 'ก้อน' },
-      { label: 'ปูนก่อสำเร็จ', perUnit: 1.8, unit: 'ถุง' },
+      {
+        label: `ปูนก่อสำเร็จ 50 กก. (1 ถุง ≈ ${BRICK_MORTAR_COVERAGE / 2} ตร.ม.)`,
+        perUnit: 2 / BRICK_MORTAR_COVERAGE,
+        unit: 'ถุง',
+      },
     ],
   },
   {
@@ -323,7 +339,11 @@ const WALL_ITEMS: readonly TakeoffItemDef[] = [
     base: wallArea,
     components: [
       { label: 'คอนกรีตบล็อก 7 ซม.', perUnit: 12.5, unit: 'ก้อน' },
-      { label: 'ปูนก่อสำเร็จ', perUnit: 0.5, unit: 'ถุง' },
+      {
+        label: `ปูนก่อสำเร็จ 50 กก. (1 ถุง ≈ ${CMU_MORTAR_COVERAGE} ตร.ม.)`,
+        perUnit: 1 / CMU_MORTAR_COVERAGE,
+        unit: 'ถุง',
+      },
     ],
   },
   {
@@ -353,11 +373,8 @@ const WALL_ITEMS: readonly TakeoffItemDef[] = [
     deductOpenings: true,
     base: (v) => wallArea(v) * n(v, 'sides'),
     openingFactor: (v) => n(v, 'sides'),
-    components: [
-      { label: 'แผ่นยิปซัม 1.20×2.40 ม.', perUnit: 0.35, unit: 'แผ่น' },
-      { label: 'โครงคร่าว', perUnit: 3.2, unit: 'ม.' },
-    ],
-    hint: 'นับพื้นที่ตามจำนวนด้านที่ปิดแผ่น — ผนังปิดสองด้านคิด 2 เท่า',
+    // ปริมาณแผ่นและโครงคร่าวขึ้นกับระยะเคร่าและระบบของแต่ละยี่ห้อ ใช้เครื่องคำนวณของผู้ผลิตแทนการเดา
+    hint: 'นับพื้นที่ตามจำนวนด้านที่ปิดแผ่น — ผนังปิดสองด้านคิด 2 เท่า · ปริมาณแผ่นและโครงคร่าวดูจากลิงก์ด้านล่าง',
     link: {
       url: 'https://furringline.com/calculator/',
       label: 'เครื่องคำนวณปริมาณวัสดุ และราคาเบื้องต้น (furringline.com)',
