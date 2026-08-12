@@ -3,6 +3,7 @@ export * from './canvas';
 export * from './scale';
 export * from './material';
 export * from './takeoff';
+export * from './cost';
 export * from './measurement';
 export * from './document';
 export * from './session';

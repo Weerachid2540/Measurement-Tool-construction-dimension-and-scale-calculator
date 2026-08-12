@@ -4,7 +4,7 @@ import type {
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from 'react';
-import { useId } from 'react';
+import { useId, useState } from 'react';
 
 interface FieldProps {
   label: string;
@@ -29,22 +29,37 @@ interface NumberInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, '
   suffix?: string;
 }
 
-/** Numeric input that keeps the store free of `NaN`. */
+/**
+ * Numeric input that keeps the store free of `NaN`.
+ *
+ * ระหว่างพิมพ์ต้องปล่อยให้ข้อความเป็นอะไรก็ได้ — ถ้าเอาค่าที่ parse แล้วเขียนกลับทุกครั้ง
+ * จะพิมพ์ "0.04" ไม่ได้เลย เพราะ "0." กลายเป็น 0 แล้วจุดหายไปทันที
+ * จึงเก็บข้อความที่พิมพ์ไว้จนกว่าจะออกจากช่อง แล้วค่อยซิงก์กับค่าจริงในสโตร์
+ */
 export function NumberInput({ value, onValueChange, suffix, ...rest }: NumberInputProps) {
   const id = useId();
+  const [draft, setDraft] = useState<string | null>(null);
+
   return (
     <span className="mt-input-wrap">
+      {/* กระจาย rest ก่อน เพื่อไม่ให้ onBlur ที่ส่งเข้ามาทับตัวที่ล้างค่าที่พิมพ์ค้างไว้ */}
       <input
+        {...rest}
         id={id}
         className="mt-input"
         type="number"
         inputMode="decimal"
-        value={Number.isFinite(value) ? String(value) : ''}
+        value={draft ?? (Number.isFinite(value) ? String(value) : '')}
         onChange={(e) => {
-          const parsed = Number.parseFloat(e.target.value);
+          const text = e.target.value;
+          setDraft(text);
+          const parsed = Number.parseFloat(text);
           onValueChange(Number.isFinite(parsed) ? parsed : 0);
         }}
-        {...rest}
+        onBlur={(e) => {
+          setDraft(null);
+          rest.onBlur?.(e);
+        }}
       />
       {suffix && <span className="mt-input-wrap__suffix">{suffix}</span>}
     </span>

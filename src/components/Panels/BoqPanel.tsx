@@ -12,10 +12,12 @@ export function BoqPanel() {
   const doc = useMeasurementStore((s) => s.doc);
   const projectName = useMeasurementStore((s) => s.projectName);
   const setSessionMeta = useMeasurementStore((s) => s.setSessionMeta);
+  const updateMeasurement = useMeasurementStore((s) => s.updateMeasurement);
   const boqOptions = useUiStore((s) => s.boqOptions);
   const setBoqOptions = useUiStore((s) => s.setBoqOptions);
   const notify = useUiStore((s) => s.notify);
   const setBusy = useUiStore((s) => s.setBusy);
+  const openPreview = useUiStore((s) => s.openPreview);
   const [includeSnapshot, setIncludeSnapshot] = useState(true);
 
   const report = useMemo(
@@ -122,6 +124,7 @@ export function BoqPanel() {
                   <th className="num">ปริมาณ</th>
                   <th className="num">ราคา/หน่วย</th>
                   <th className="num">จำนวนเงิน</th>
+                  <th>หมายเหตุ</th>
                 </tr>
               </thead>
               <tbody>
@@ -139,20 +142,39 @@ export function BoqPanel() {
                     <td className="num">
                       {row.amount !== undefined ? formatNumber(row.amount, 2) : '—'}
                     </td>
+                    <td>
+                      {/* หมายเหตุเก็บที่รายการวัด แก้จากตรงนี้หรือจากแท็บคุณสมบัติก็ได้ */}
+                      {row.measurementId ? (
+                        <TextInput
+                          value={row.remark ?? ''}
+                          placeholder="—"
+                          onChange={(e) =>
+                            updateMeasurement(row.measurementId as string, {
+                              notes: e.target.value,
+                            })
+                          }
+                        />
+                      ) : (
+                        (row.remark ?? '—')
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
                 <tr>
-                  <td colSpan={7}>รวมทั้งสิ้น</td>
+                  <td colSpan={8}>รวมทั้งสิ้น</td>
                   <td className="num">{formatCurrency(report.subtotal)}</td>
                 </tr>
               </tfoot>
             </table>
           </div>
 
-          <div className="mt-panel-footer mt-panel-footer--split">
-            <Button icon="excel" variant="primary" onClick={() => void handleExcel()}>
+          <div className="mt-panel-footer mt-panel-footer--wrap">
+            <Button icon="eye" variant="primary" onClick={() => openPreview('boq')}>
+              พรีวิว
+            </Button>
+            <Button icon="excel" onClick={() => void handleExcel()}>
               ส่งออก Excel
             </Button>
             <Button icon="pdf" onClick={() => void handlePdf()}>

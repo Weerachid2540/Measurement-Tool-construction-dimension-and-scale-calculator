@@ -223,6 +223,62 @@
   font-size: var(--mt-text-sm);
 }
 
+/* ชื่อย่อใช้เฉพาะตอนอยู่ในแถบด้านบน */
+.mt-tool__label--short {
+  display: none;
+}
+
+/* ------------------- เครื่องมือวัดในแถบด้านบน (ไม่ใช่แถบซ้ายแล้ว) ------------------- */
+
+.mt-canvas-toolbar .mt-toolbar {
+  width: auto;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--mt-space-2);
+  padding: 0;
+  border-right: none;
+  overflow: visible;
+}
+
+.mt-canvas-toolbar .mt-toolbar__group {
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+  padding: 0 var(--mt-space-2) 0 0;
+  border-bottom: none;
+  border-right: 1px solid var(--mt-border);
+}
+
+.mt-canvas-toolbar .mt-toolbar__group:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+/* ไอคอนวางบนชื่อย่อ — ชื่อเต็มยังอ่านได้จาก tooltip */
+.mt-canvas-toolbar .mt-tool {
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 6px;
+  min-width: 52px;
+}
+
+.mt-canvas-toolbar .mt-tool__label,
+.mt-canvas-toolbar .mt-toolbar__caption {
+  display: none;
+}
+
+.mt-canvas-toolbar .mt-tool__label--short {
+  display: block;
+  font-size: 10px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.mt-canvas-toolbar .mt-swatches {
+  display: flex;
+  gap: 3px;
+}
+
 /* ------------------------------ canvas toolbar ------------------------------ */
 
 .mt-canvas-toolbar {
@@ -294,9 +350,11 @@
   width: auto;
 }
 
+/* 7 แท็บเรียงแถวเดียวไม่พอในแผงกว้าง 420px จึงให้ตัดขึ้นบรรทัดใหม่แทนการโดนตัดหาย */
 .mt-panel__tabs {
   display: flex;
   align-items: stretch;
+  flex-wrap: wrap;
   border-bottom: 1px solid var(--mt-border);
   flex-shrink: 0;
 }
@@ -305,9 +363,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--mt-space-2);
-  flex: 1;
-  padding: var(--mt-space-3) var(--mt-space-2);
+  gap: 6px;
+  flex: 1 0 auto;
+  padding: var(--mt-space-2) 10px;
   border: none;
   border-bottom: 2px solid transparent;
   background: transparent;
@@ -451,18 +509,10 @@
     max-height: none;
   }
 
-  /* แท็บ 6 อันเรียงไม่พอในจอมือถือ ให้เลื่อนแนวนอนแทนที่จะบีบจนอ่านไม่ออก */
-  .mt-panel__tabs {
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .mt-panel__tabs::-webkit-scrollbar {
-    display: none;
-  }
-
+  /* จอมือถือแท็บตัดหลายบรรทัด ให้ปุ่มเล็กลงเพื่อไม่ให้กินพื้นที่แนวตั้งเกินไป */
   .mt-panel__tab {
-    flex: 0 0 auto;
+    padding: 6px 8px;
+    font-size: var(--mt-text-xs);
   }
 
   /* แผงอยู่ด้านล่างแล้ว ลูกศรย่อ/ขยายจึงต้องชี้ขึ้น-ลง ไม่ใช่ซ้าย-ขวา */

@@ -198,6 +198,7 @@ export async function exportTakeoffToPdf(report: TakeoffReport): Promise<void> {
       '',
       '',
       entry.amount > 0 ? formatNumber(entry.amount, 2) : '',
+      '',
     ]);
 
     for (const groupEntry of entry.groups) {
@@ -210,6 +211,7 @@ export async function exportTakeoffToPdf(report: TakeoffReport): Promise<void> {
         '',
         '',
         groupEntry.amount > 0 ? formatNumber(groupEntry.amount, 2) : '',
+        '',
       ]);
 
       groupEntry.lines.forEach(({ line, item, result }, index) => {
@@ -221,6 +223,7 @@ export async function exportTakeoffToPdf(report: TakeoffReport): Promise<void> {
           item.noteOnly ? '-' : formatNumber(result.quantity, 3),
           line.unitPrice !== undefined ? formatNumber(line.unitPrice, 2) : '-',
           result.amount !== undefined ? formatNumber(result.amount, 2) : '-',
+          line.notes ?? '',
         ]);
       });
     }
@@ -228,17 +231,20 @@ export async function exportTakeoffToPdf(report: TakeoffReport): Promise<void> {
 
   autoTable(doc, {
     startY: 30,
-    head: [['ลำดับ', 'รายการ', 'การคำนวณ', 'หน่วย', 'ปริมาณ', 'ราคา/หน่วย', 'จำนวนเงิน']],
+    head: [
+      ['ลำดับ', 'รายการ', 'การคำนวณ', 'หน่วย', 'ปริมาณ', 'ราคา/หน่วย', 'จำนวนเงิน', 'หมายเหตุ'],
+    ],
     body,
     styles: { font, fontSize: 8, cellPadding: 1.8 },
     headStyles: { font, fillColor: [14, 165, 233], textColor: 255, halign: 'center' },
     columnStyles: {
-      0: { cellWidth: 18 },
-      1: { cellWidth: 62 },
-      3: { halign: 'center', cellWidth: 14 },
-      4: { halign: 'right', cellWidth: 22 },
-      5: { halign: 'right', cellWidth: 22 },
-      6: { halign: 'right', cellWidth: 26 },
+      0: { cellWidth: 16 },
+      1: { cellWidth: 55 },
+      3: { halign: 'center', cellWidth: 13 },
+      4: { halign: 'right', cellWidth: 20 },
+      5: { halign: 'right', cellWidth: 20 },
+      6: { halign: 'right', cellWidth: 24 },
+      7: { cellWidth: 30 },
     },
     theme: 'grid',
     // แถวหัวหมวดใช้พื้นเข้ม แถวหมวดงานใช้พื้นอ่อน เพื่อให้อ่านลำดับชั้นออกบนกระดาษ

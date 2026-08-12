@@ -1214,6 +1214,188 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* --------------------------------- preview ---------------------------------- */
+
+.mt-preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mt-space-3);
+}
+
+.mt-preview h4 {
+  font-size: var(--mt-text-md);
+}
+
+.mt-preview__meta {
+  font-size: var(--mt-text-sm);
+  color: var(--mt-text-muted);
+}
+
+.mt-preview__meta span {
+  color: var(--mt-text-faint);
+}
+
+.mt-preview__group td {
+  background: var(--mt-bg-sunken);
+  font-weight: 600;
+}
+
+.mt-preview__subgroup td {
+  background: color-mix(in srgb, var(--mt-accent) 8%, transparent);
+}
+
+/* บรรทัดการคำนวณเป็นข้อมูลประกอบ ไม่ควรแย่งสายตาไปจากตัวเลขปริมาณ */
+.mt-preview__working {
+  font-size: var(--mt-text-xs);
+  color: var(--mt-text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.mt-preview__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: var(--mt-space-3);
+  border-radius: var(--mt-radius-md);
+  background: var(--mt-bg-sunken);
+}
+
+.mt-preview__total strong {
+  font-size: var(--mt-text-lg);
+  color: var(--mt-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------- cost ------------------------------------ */
+
+.mt-cost__summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--mt-space-2);
+  padding: var(--mt-space-3);
+  border-radius: var(--mt-radius-md);
+  background: var(--mt-bg-sunken);
+}
+
+.mt-cost__summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--mt-text-xs);
+  color: var(--mt-text-faint);
+}
+
+.mt-cost__summary strong {
+  font-size: var(--mt-text-md);
+  color: var(--mt-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.mt-cost__summary-total strong {
+  color: var(--mt-accent);
+}
+
+.mt-cost__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mt-space-2);
+}
+
+.mt-cost__section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--mt-space-2);
+  padding-bottom: var(--mt-space-1);
+  border-bottom: 1px solid var(--mt-border);
+}
+
+.mt-cost__section-head h4 {
+  font-size: var(--mt-text-md);
+}
+
+.mt-cost__section-head em {
+  font-style: normal;
+  font-size: var(--mt-text-xs);
+  color: var(--mt-text-faint);
+}
+
+.mt-cost__section-head span {
+  font-size: var(--mt-text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--mt-text-muted);
+}
+
+.mt-cost__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mt-space-2);
+  padding: var(--mt-space-2);
+  border: 1px solid var(--mt-border);
+  border-radius: var(--mt-radius-sm);
+  background: var(--mt-surface);
+}
+
+.mt-cost__row-main {
+  display: flex;
+  gap: var(--mt-space-2);
+}
+
+.mt-cost__date {
+  flex: 0 0 auto;
+  width: 150px;
+}
+
+.mt-cost__row-main .mt-input:not(.mt-cost__date) {
+  flex: 1;
+  min-width: 0;
+}
+
+.mt-cost__row-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: var(--mt-space-2);
+}
+
+.mt-cost__row-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mt-space-2);
+}
+
+.mt-cost__amount {
+  font-size: var(--mt-text-md);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.mt-cost__amount em {
+  font-style: normal;
+  font-size: var(--mt-text-xs);
+  font-weight: 400;
+  color: var(--mt-text-faint);
+}
+
+.mt-cost__row-actions {
+  display: flex;
+  gap: var(--mt-space-1);
+}
+
+@media (max-width: 600px) {
+  .mt-cost__summary {
+    grid-template-columns: 1fr;
+  }
+
+  .mt-cost__row-main {
+    flex-wrap: wrap;
+  }
+
+  .mt-cost__date {
+    width: 100%;
+  }
+}
+
 /* --------------------------------- takeoff ---------------------------------- */
 
 .mt-takeoff {

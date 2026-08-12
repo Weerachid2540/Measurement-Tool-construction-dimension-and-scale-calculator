@@ -7,12 +7,14 @@ interface ToolDefinition {
   id: ToolId;
   icon: IconName;
   label: string;
+  /** ชื่อสั้นใต้ไอคอนบนแถบด้านบน — ชื่อเต็มยังอยู่ใน tooltip */
+  short?: string;
   shortcut: string;
 }
 
 const TOOL_GROUPS: ToolDefinition[][] = [
   [
-    { id: 'select', icon: 'select', label: 'เลือก / แก้ไข', shortcut: 'V' },
+    { id: 'select', icon: 'select', label: 'เลือก / แก้ไข', short: 'เลือก', shortcut: 'V' },
     { id: 'pan', icon: 'pan', label: 'เลื่อนภาพ', shortcut: 'H' },
   ],
   [
@@ -21,11 +23,25 @@ const TOOL_GROUPS: ToolDefinition[][] = [
     { id: 'rectangle', icon: 'rectangle', label: 'สี่เหลี่ยม', shortcut: 'R' },
     { id: 'polygon', icon: 'polygon', label: 'พื้นที่', shortcut: 'G' },
     { id: 'circle', icon: 'circle', label: 'วงกลม', shortcut: 'C' },
-    { id: 'angle', icon: 'angle', label: 'มุม / ความลาด', shortcut: 'A' },
+    { id: 'angle', icon: 'angle', label: 'มุม / ความลาด', short: 'มุม', shortcut: 'A' },
     { id: 'count', icon: 'count', label: 'นับจำนวน', shortcut: 'N' },
-    { id: 'autoCount', icon: 'search', label: 'นับสัญลักษณ์อัตโนมัติ', shortcut: 'M' },
+    {
+      id: 'autoCount',
+      icon: 'search',
+      label: 'นับสัญลักษณ์อัตโนมัติ',
+      short: 'นับอัตโนมัติ',
+      shortcut: 'M',
+    },
   ],
-  [{ id: 'calibrate', icon: 'calibrate', label: 'ปรับเทียบมาตราส่วน', shortcut: 'K' }],
+  [
+    {
+      id: 'calibrate',
+      icon: 'calibrate',
+      label: 'ปรับเทียบมาตราส่วน',
+      short: 'ปรับเทียบ',
+      shortcut: 'K',
+    },
+  ],
 ];
 
 export function ToolBar() {
@@ -65,6 +81,7 @@ export function ToolBar() {
             >
               <Icon name={tool.icon} size={20} />
               <span className="mt-tool__label">{tool.label}</span>
+              <span className="mt-tool__label--short">{tool.short ?? tool.label}</span>
             </button>
           ))}
         </div>

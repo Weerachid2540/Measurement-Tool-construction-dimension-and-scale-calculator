@@ -8,6 +8,7 @@ export type PanelTab =
   | 'properties'
   | 'autoCount'
   | 'takeoff'
+  | 'cost'
   | 'boq'
   | 'history';
 export type WorkspaceMode = '2d' | '3d';
@@ -26,7 +27,11 @@ export type ModalId =
   | 'shortcuts'
   | 'saveSymbol'
   | 'about'
+  | 'preview'
   | null;
+
+/** เอกสารที่กำลังพรีวิวก่อนส่งออก */
+export type PreviewKind = 'takeoff' | 'cost' | 'boq';
 
 interface UiState {
   mode: WorkspaceMode;
@@ -37,6 +42,7 @@ interface UiState {
   toasts: Toast[];
   boqOptions: BoqOptions;
   busy: string | null;
+  previewKind: PreviewKind | null;
 }
 
 interface UiActions {
@@ -52,6 +58,7 @@ interface UiActions {
   dismissToast: (id: string) => void;
   setBoqOptions: (patch: Partial<BoqOptions>) => void;
   setBusy: (label: string | null) => void;
+  openPreview: (kind: PreviewKind) => void;
 }
 
 export type UiStore = UiState & UiActions;
@@ -78,6 +85,7 @@ export const useUiStore = create<UiStore>((set, get) => ({
   toasts: [],
   boqOptions: { ...DEFAULT_BOQ_OPTIONS },
   busy: null,
+  previewKind: null,
 
   setMode: (mode) => set({ mode }),
 
@@ -106,6 +114,8 @@ export const useUiStore = create<UiStore>((set, get) => ({
   setBoqOptions: (patch) => set((state) => ({ boqOptions: { ...state.boqOptions, ...patch } })),
 
   setBusy: (busy) => set({ busy }),
+
+  openPreview: (previewKind) => set({ previewKind, modal: 'preview' }),
 }));
 
 // Apply the persisted theme before React paints.

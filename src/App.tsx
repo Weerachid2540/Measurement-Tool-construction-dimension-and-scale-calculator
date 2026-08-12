@@ -4,7 +4,6 @@ import { useDocumentLoader, useKeyboardShortcuts, useSessionPersistence } from '
 import { Toasts } from '@/components/common';
 import { Header } from '@/components/Layout/Header';
 import { StatusBar } from '@/components/Layout/StatusBar';
-import { ToolBar } from '@/components/Toolbar/ToolBar';
 import { CanvasToolbar } from '@/components/Toolbar/CanvasToolbar';
 import { MeasureCanvas } from '@/components/Canvas/MeasureCanvas';
 import { FileDropzone } from '@/components/FileUpload/FileDropzone';
@@ -13,6 +12,7 @@ import { CalibrateModal } from '@/components/Modals/CalibrateModal';
 import { ShortcutsModal } from '@/components/Modals/ShortcutsModal';
 import { SaveSymbolModal } from '@/components/Modals/SaveSymbolModal';
 import { AboutModal } from '@/components/Modals/AboutModal';
+import { PreviewModal } from '@/components/Modals/PreviewModal';
 
 // three.js is a large dependency — keep it out of the initial bundle.
 const Viewer3D = lazy(() =>
@@ -38,8 +38,6 @@ export default function App() {
       <Header />
 
       <div className="mt-body">
-        <ToolBar />
-
         <main className="mt-workspace">
           <CanvasToolbar />
 
@@ -65,6 +63,7 @@ export default function App() {
       <ShortcutsModal />
       <SaveSymbolModal />
       <AboutModal />
+      <PreviewModal />
       <Toasts />
     </div>
   );

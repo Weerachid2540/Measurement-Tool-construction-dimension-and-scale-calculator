@@ -26,6 +26,7 @@ export function TakeoffPanel() {
   const clearAll = useTakeoffStore((s) => s.clearAll);
   const notify = useUiStore((s) => s.notify);
   const setBusy = useUiStore((s) => s.setBusy);
+  const openPreview = useUiStore((s) => s.openPreview);
 
   const [categoryId, setCategoryId] = useState<TakeoffCategoryId>('architecture');
   const [groupId, setGroupId] = useState<string>('arch-wall');
@@ -165,8 +166,11 @@ export function TakeoffPanel() {
             <strong>{formatCurrency(report.total)}</strong>
           </div>
 
-          <div className="mt-panel-footer mt-panel-footer--split">
-            <Button icon="excel" variant="primary" onClick={() => void handleExport('excel')}>
+          <div className="mt-panel-footer mt-panel-footer--wrap">
+            <Button icon="eye" variant="primary" onClick={() => openPreview('takeoff')}>
+              พรีวิว
+            </Button>
+            <Button icon="excel" onClick={() => void handleExport('excel')}>
               ส่งออก Excel
             </Button>
             <Button icon="pdf" onClick={() => void handleExport('pdf')}>
@@ -250,6 +254,14 @@ function TakeoffLineRow({ line, item }: { line: TakeoffLine; item: TakeoffItemDe
               value={line.label}
               placeholder="เช่น ผนังห้องนอน 1 ทิศเหนือ"
               onChange={(e) => updateLine(line.id, { label: e.target.value })}
+            />
+          </Field>
+
+          <Field label="หมายเหตุ">
+            <TextInput
+              value={line.notes ?? ''}
+              placeholder="เช่น รอแบบแก้ไข หรือ ราคารวมค่าขนส่งแล้ว"
+              onChange={(e) => updateLine(line.id, { notes: e.target.value })}
             />
           </Field>
 

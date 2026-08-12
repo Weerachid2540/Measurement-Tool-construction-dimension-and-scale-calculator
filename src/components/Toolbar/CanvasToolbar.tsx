@@ -3,6 +3,7 @@ import { useDocumentLoader } from '@/hooks';
 import { Button, Checkbox, Icon, NumberInput, Select } from '@/components/common';
 import { formatNumber } from '@/utils/format';
 import { ScaleControl } from './ScaleControl';
+import { ToolBar } from './ToolBar';
 
 export function CanvasToolbar() {
   const doc = useMeasurementStore((s) => s.doc);
@@ -26,6 +27,9 @@ export function CanvasToolbar() {
 
   return (
     <div className="mt-canvas-toolbar">
+      {/* เครื่องมือวัดย้ายมาอยู่แถวเดียวกับตัวควบคุมแบบ เพื่อคืนความกว้างทั้งหมดให้พื้นที่วาด */}
+      <ToolBar />
+
       <div className="mt-canvas-toolbar__section">
         <ScaleControl />
       </div>

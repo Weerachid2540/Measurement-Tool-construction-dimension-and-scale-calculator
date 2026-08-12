@@ -1,5 +1,7 @@
 export interface BoqRow {
   no: number;
+  /** รายการวัดต้นทางของแถวนี้ — ไม่มีเมื่อแถวถูกยุบรวมหลายรายการเข้าด้วยกัน */
+  measurementId?: string;
   code: string;
   description: string;
   /** หมวดย่อย เช่น "1. งานผนัง (Wall)" หรือชนิดวัสดุเมื่อไม่ได้เลือกหมวดงาน */

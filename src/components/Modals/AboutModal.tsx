@@ -5,12 +5,14 @@ import { formatDateTime } from '@/utils/format';
 /** Release notes, newest first. Keep in step with CHANGELOG.md. */
 const RELEASES: readonly { version: string; date: string; changes: string[] }[] = [
   {
-    version: '1.4.0',
-    date: '2026-08-08',
+    version: '1.5.0',
+    date: '2026-08-12',
     changes: [
-      'แท็บ "ถอดแบบ" — คำนวณถอดแบบประมาณราคา 4 หมวดหลัก (STRUCTURE / ARCHITECTURE / ELECTRICAL / PIPING-SANITARY)',
-      'งานผนัง 13 รายการ หักช่องเปิดประตู-หน้าต่างได้ พร้อมแสดงการคำนวณทีละขั้น',
-      'ประมาณปริมาณวัสดุให้ เช่น อิฐมอญ 138 ก้อน/ตร.ม. และส่งออก Excel / PDF แยกไฟล์จาก BOQ',
+      'แท็บ "ถอดแบบ" — คำนวณถอดแบบประมาณราคา 4 หมวดหลัก งานผนัง 13 รายการ และงานโครงสร้าง 5 หมวดพร้อมสูตร',
+      'แท็บ "ต้นทุน" — บันทึกค่าวัสดุตามบิลจริงและค่าแรงช่าง (รายวัน/เหมา พร้อมค่าเดินทาง)',
+      'ปุ่มพรีวิวก่อนส่งออกทั้งถอดแบบ ต้นทุน และ BOQ พร้อมช่องหมายเหตุรายรายการ',
+      'ใช้งานบนมือถือและไอแพดได้ ซูมสองนิ้วได้ และ PDF รองรับฟอนต์ไทย Sarabun',
+      'เปลี่ยนชื่อแอปเป็น Cost Estimation and Quantity Takeoff Services',
     ],
   },
   {

@@ -4,6 +4,7 @@ import { Icon, type IconName } from '@/components/common';
 import { MeasurementList } from './MeasurementList';
 import { PropertiesPanel } from './PropertiesPanel';
 import { TakeoffPanel } from './TakeoffPanel';
+import { CostPanel } from './CostPanel';
 import { BoqPanel } from './BoqPanel';
 import { HistoryPanel } from './HistoryPanel';
 import { AutoCountPanel } from './AutoCountPanel';
@@ -13,6 +14,7 @@ const TABS: { id: PanelTab; label: string; icon: IconName }[] = [
   { id: 'properties', label: 'คุณสมบัติ', icon: 'settings' },
   { id: 'autoCount', label: 'นับอัตโนมัติ', icon: 'count' },
   { id: 'takeoff', label: 'ถอดแบบ', icon: 'calibrate' },
+  { id: 'cost', label: 'ต้นทุน', icon: 'save' },
   { id: 'boq', label: 'BOQ', icon: 'table' },
   { id: 'history', label: 'ประวัติ', icon: 'history' },
 ];
@@ -24,10 +26,10 @@ export function SidePanel() {
   const togglePanel = useUiStore((s) => s.togglePanel);
 
   return (
-    // หน้าถอดแบบมีตารางกรอกตัวเลขหลายคอลัมน์ จึงกางเป็นครึ่งจอ
+    // ถอดแบบกับต้นทุนเป็นตารางกรอกตัวเลขหลายคอลัมน์ จึงกางกว้างกว่าแท็บอื่น
     <aside
       className={`mt-panel ${panelOpen ? '' : 'is-collapsed'} ${
-        panelTab === 'takeoff' ? 'is-wide' : ''
+        panelTab === 'takeoff' || panelTab === 'cost' ? 'is-wide' : ''
       }`}
       aria-label="แผงข้อมูล"
     >
@@ -62,6 +64,7 @@ export function SidePanel() {
           {panelTab === 'properties' && <PropertiesPanel />}
           {panelTab === 'autoCount' && <AutoCountPanel />}
           {panelTab === 'takeoff' && <TakeoffPanel />}
+          {panelTab === 'cost' && <CostPanel />}
           {panelTab === 'boq' && <BoqPanel />}
           {panelTab === 'history' && <HistoryPanel />}
         </div>

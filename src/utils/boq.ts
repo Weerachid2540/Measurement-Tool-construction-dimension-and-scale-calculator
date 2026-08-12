@@ -43,6 +43,7 @@ export function buildBoqReport(
       const workCategory = work ? takeoffCategory(work.category) : undefined;
       return {
         no: index + 1,
+        measurementId: m.id,
         code: m.label,
         description: material.description,
         // ใส่เลขหมวดนำหน้าเพราะชื่อหมวดซ้ำข้ามหมวดหลักได้ เช่น "งานพื้น" มีทั้งโครงสร้างและสถาปัตย์
@@ -61,6 +62,7 @@ export function buildBoqReport(
 
     return {
       no: index + 1,
+      measurementId: m.id,
       code: m.label,
       description: m.notes?.trim() || `${result.primary.label} — ${TYPE_LABELS[m.type]}`,
       category: TYPE_LABELS[m.type],
@@ -98,6 +100,8 @@ function groupRows(rows: BoqRow[]): BoqRow[] {
     existing.amount =
       existing.unitPrice !== undefined ? existing.quantity * existing.unitPrice : undefined;
     existing.code = `${existing.code}, ${row.code}`;
+    // แถวยุบรวมแล้วไม่ผูกกับรายการวัดเดียวอีกต่อไป จึงแก้หมายเหตุจากตาราง BOQ ไม่ได้
+    existing.measurementId = undefined;
   }
   return [...groups.values()].map((row, index) => ({ ...row, no: index + 1 }));
 }
