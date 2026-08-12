@@ -679,7 +679,8 @@ const STRUCTURE_ITEMS: readonly TakeoffItemDef[] = [
           key: 'tieWirePercent',
           label: 'ลวดผูกเหล็ก',
           unit: '% ของน้ำหนักเหล็ก',
-          defaultValue: 1,
+          // 30 กก. ต่อเหล็กเสริม 1 ตัน = 3% (ค่าที่ใช้จริงหน้างาน)
+          defaultValue: 3,
           min: 0,
           step: 0.1,
           excludeFromWorking: true,
@@ -689,7 +690,7 @@ const STRUCTURE_ITEMS: readonly TakeoffItemDef[] = [
         { label: 'ลวดผูกเหล็ก', perUnit: (v) => n(v, 'tieWirePercent') / 100, unit: 'กก.' },
       ],
       code: '6.',
-      hint: 'อ่านน้ำหนักเหล็กจาก bar schedule (น้ำหนักต่อเมตร = D² ÷ 162.2) · ลวดผูกเหล็กปกติ 1% ของน้ำหนักเหล็ก',
+      hint: 'อ่านน้ำหนักเหล็กจาก bar schedule (น้ำหนักต่อเมตร = D² ÷ 162.2) · ลวดผูกเหล็กปกติ 3% ของน้ำหนักเหล็ก (30 กก. ต่อเหล็ก 1 ตัน)',
     },
   ),
 
@@ -754,7 +755,8 @@ const STRUCTURE_ITEMS: readonly TakeoffItemDef[] = [
           key: 'tieWirePercent',
           label: 'ลวดผูกเหล็ก',
           unit: '% ของน้ำหนักเหล็ก',
-          defaultValue: 1,
+          // 30 กก. ต่อเหล็กเสริม 1 ตัน = 3% (ค่าที่ใช้จริงหน้างาน)
+          defaultValue: 3,
           min: 0,
           step: 0.1,
           excludeFromWorking: true,
@@ -763,7 +765,7 @@ const STRUCTURE_ITEMS: readonly TakeoffItemDef[] = [
       components: [
         { label: 'ลวดผูกเหล็ก', perUnit: (v) => n(v, 'tieWirePercent') / 100, unit: 'กก.' },
       ],
-      hint: 'รวมเหล็กยืนและเหล็กปลอก อ่านจาก bar schedule · ลวดผูกเหล็กปกติ 1% ของน้ำหนักเหล็ก',
+      hint: 'รวมเหล็กยืนและเหล็กปลอก อ่านจาก bar schedule · ลวดผูกเหล็กปกติ 3% ของน้ำหนักเหล็ก (30 กก. ต่อเหล็ก 1 ตัน)',
     },
   ),
   {
@@ -880,7 +882,8 @@ const STRUCTURE_ITEMS: readonly TakeoffItemDef[] = [
           key: 'tieWirePercent',
           label: 'ลวดผูกเหล็ก',
           unit: '% ของน้ำหนักเหล็ก',
-          defaultValue: 1,
+          // 30 กก. ต่อเหล็กเสริม 1 ตัน = 3% (ค่าที่ใช้จริงหน้างาน)
+          defaultValue: 3,
           min: 0,
           step: 0.1,
           excludeFromWorking: true,
@@ -889,7 +892,7 @@ const STRUCTURE_ITEMS: readonly TakeoffItemDef[] = [
       components: [
         { label: 'ลวดผูกเหล็ก', perUnit: (v) => n(v, 'tieWirePercent') / 100, unit: 'กก.' },
       ],
-      hint: 'รวมเหล็กนอนและเหล็กปลอก อ่านจาก bar schedule · ลวดผูกเหล็กปกติ 1% ของน้ำหนักเหล็ก',
+      hint: 'รวมเหล็กนอนและเหล็กปลอก อ่านจาก bar schedule · ลวดผูกเหล็กปกติ 3% ของน้ำหนักเหล็ก (30 กก. ต่อเหล็ก 1 ตัน)',
     },
   ),
 
@@ -980,7 +983,8 @@ const STRUCTURE_ITEMS: readonly TakeoffItemDef[] = [
           key: 'tieWirePercent',
           label: 'ลวดผูกเหล็ก',
           unit: '% ของน้ำหนักเหล็ก',
-          defaultValue: 1,
+          // 30 กก. ต่อเหล็กเสริม 1 ตัน = 3% (ค่าที่ใช้จริงหน้างาน)
+          defaultValue: 3,
           min: 0,
           step: 0.1,
           excludeFromWorking: true,
@@ -989,7 +993,7 @@ const STRUCTURE_ITEMS: readonly TakeoffItemDef[] = [
       components: [
         { label: 'ลวดผูกเหล็ก', perUnit: (v) => n(v, 'tieWirePercent') / 100, unit: 'กก.' },
       ],
-      hint: 'เหล็กเส้นหรือไวร์เมชก็ได้ อ่านน้ำหนักจาก bar schedule · ลวดผูกเหล็กปกติ 1% ของน้ำหนักเหล็ก',
+      hint: 'เหล็กเส้นหรือไวร์เมชก็ได้ อ่านน้ำหนักจาก bar schedule · ลวดผูกเหล็กปกติ 3% ของน้ำหนักเหล็ก (30 กก. ต่อเหล็ก 1 ตัน)',
     },
   ),
 
