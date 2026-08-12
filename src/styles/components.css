@@ -1266,6 +1266,108 @@
   font-variant-numeric: tabular-nums;
 }
 
+/**
+ * โหมดพิมพ์ — พิมพ์เฉพาะหน้าต่างพรีวิว บนพื้นขาวตัวอักษรดำ
+ * เบราว์เซอร์เรนเดอร์ภาษาไทยเองจึงวางสระและวรรณยุกต์ถูกต้อง ต่างจาก jsPDF
+ */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .mt-modal-backdrop,
+  .mt-modal-backdrop * {
+    visibility: visible;
+  }
+
+  .mt-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    display: block;
+    padding: 0;
+    background: #fff;
+    backdrop-filter: none;
+  }
+
+  .mt-modal {
+    max-width: none !important;
+    max-height: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: #fff;
+    color: #000;
+  }
+
+  .mt-modal__body {
+    overflow: visible;
+    padding: 0;
+  }
+
+  .mt-modal__header {
+    padding: 0 0 8px;
+    border-bottom: 1px solid #999;
+  }
+
+  .mt-modal__header .mt-icon-btn,
+  .mt-modal__footer {
+    display: none;
+  }
+
+  .mt-table-wrap {
+    overflow: visible;
+  }
+
+  .mt-table,
+  .mt-table th,
+  .mt-table td {
+    color: #000;
+    border-color: #999;
+  }
+
+  /* พื้นหลังหัวตารางและแถวหมวดต้องพิมพ์ออกมาด้วย ไม่งั้นอ่านลำดับชั้นไม่ออก */
+  .mt-table thead th,
+  .mt-preview__group td {
+    background: #e2e8f0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .mt-preview__subgroup td {
+    background: #f1f5f9 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .mt-preview__working,
+  .mt-preview__meta span {
+    color: #444;
+  }
+
+  .mt-preview__total {
+    background: #e2e8f0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .mt-preview__total strong {
+    color: #000;
+  }
+
+  tr {
+    break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  @page {
+    size: A4 landscape;
+    margin: 12mm;
+  }
+}
+
 /* ---------------------------------- cost ------------------------------------ */
 
 .mt-cost__summary {

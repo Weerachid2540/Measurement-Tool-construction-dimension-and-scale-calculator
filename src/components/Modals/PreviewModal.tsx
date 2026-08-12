@@ -79,11 +79,15 @@ export function PreviewModal() {
       width={960}
       footer={
         <>
-          <Button icon="excel" variant="primary" onClick={() => void handleExport('excel')}>
+          {/* พิมพ์ผ่านเบราว์เซอร์ได้ภาษาไทยถูกต้องเสมอ ต่างจาก jsPDF ที่วางสระ-วรรณยุกต์ซ้อนกัน */}
+          <Button icon="pdf" variant="primary" onClick={() => window.print()}>
+            พิมพ์ / บันทึกเป็น PDF
+          </Button>
+          <Button icon="excel" onClick={() => void handleExport('excel')}>
             ส่งออก Excel
           </Button>
-          <Button icon="pdf" onClick={() => void handleExport('pdf')}>
-            ส่งออก PDF
+          <Button icon="download" onClick={() => void handleExport('pdf')}>
+            PDF (jsPDF)
           </Button>
           <Button onClick={closeModal}>ปิด</Button>
         </>
