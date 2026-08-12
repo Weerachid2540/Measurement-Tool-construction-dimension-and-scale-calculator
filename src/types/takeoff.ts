@@ -212,6 +212,12 @@ const BRICK_MORTAR_COVERAGE = 1.3;
 const CMU_MORTAR_COVERAGE = 2.65;
 
 /**
+ * ปูนกาวถุง 20 กก. — สเปกผู้ผลิต (จระเข้) ปูได้ราว 5 ตร.ม. ต่อถุง แต่หน้างานคิด 0.3 ถุง/ตร.ม.
+ * (≈ 3.3 ตร.ม. ต่อถุง) เผื่อความสูญเสีย พื้นไม่เรียบ และการปาดปูนหนากว่าสเปก
+ */
+const TILE_ADHESIVE_BAGS_PER_SQM = 0.3;
+
+/**
  * รายการที่ยังไม่ตกลงวิธีคิด — มีแต่ช่องตำแหน่ง/รายละเอียดไว้จดไปก่อน
  * ไม่คิดปริมาณและไม่เข้ายอดเงิน จนกว่าจะใส่สูตรให้
  */
@@ -432,8 +438,13 @@ const WALL_ITEMS: readonly TakeoffItemDef[] = [
     base: wallArea,
     components: [
       { label: 'กระเบื้องบุผนัง', perUnit: 1.05, unit: 'ตร.ม.' },
-      { label: 'ปูนกาว', perUnit: 0.25, unit: 'ถุง' },
+      {
+        label: 'ปูนกาว 20 กก.',
+        perUnit: TILE_ADHESIVE_BAGS_PER_SQM,
+        unit: 'ถุง',
+      },
     ],
+    hint: `ปูนกาวถุง 20 กก. คิด ${TILE_ADHESIVE_BAGS_PER_SQM} ถุง/ตร.ม. (เผื่อความสูญเสียแล้ว — สเปกผู้ผลิตปูได้ราว 5 ตร.ม. ต่อถุง)`,
   },
   {
     id: 'wall-stiffener',
@@ -652,7 +663,8 @@ const STRUCTURE_ITEMS: readonly TakeoffItemDef[] = [
         key: 'nailPerSqm',
         label: 'ตะปูต่อไม้แบบ 1 ตร.ม.',
         unit: 'กก./ตร.ม.',
-        defaultValue: 0.2,
+        // ค่าที่ใช้จริงหน้างาน — ไม้แบบ 1 ตร.ม. ใช้ตะปู 0.25 กก.
+        defaultValue: 0.25,
         min: 0,
         step: 0.05,
         excludeFromWorking: true,
@@ -663,7 +675,7 @@ const STRUCTURE_ITEMS: readonly TakeoffItemDef[] = [
     workingExpr: (v) =>
       `(${f(n(v, 'width'))} + ${f(n(v, 'length'))}) × 2 × ${f(n(v, 'thickness'))} × ${n(v, 'count')}`,
     components: [{ label: 'ตะปู', perUnit: (v) => n(v, 'nailPerSqm'), unit: 'กก.' }],
-    hint: 'อัตราตะปูแก้ได้ตามหน้างาน (ค่าเริ่มต้น 0.2 กก. ต่อไม้แบบ 1 ตร.ม.)',
+    hint: 'อัตราตะปูแก้ได้ตามหน้างาน (ค่าเริ่มต้น 0.25 กก. ต่อไม้แบบ 1 ตร.ม.)',
   },
   manualQuantityItem(
     'str-footing-rebar',
@@ -728,7 +740,8 @@ const STRUCTURE_ITEMS: readonly TakeoffItemDef[] = [
         key: 'nailPerSqm',
         label: 'ตะปูต่อไม้แบบ 1 ตร.ม.',
         unit: 'กก./ตร.ม.',
-        defaultValue: 0.2,
+        // ค่าที่ใช้จริงหน้างาน — ไม้แบบ 1 ตร.ม. ใช้ตะปู 0.25 กก.
+        defaultValue: 0.25,
         min: 0,
         step: 0.05,
         excludeFromWorking: true,
@@ -739,7 +752,7 @@ const STRUCTURE_ITEMS: readonly TakeoffItemDef[] = [
     workingExpr: (v) =>
       `(${f(n(v, 'width'))} + ${f(n(v, 'depth'))}) × 2 × ${f(n(v, 'height'))} × ${n(v, 'count')}`,
     components: [{ label: 'ตะปู', perUnit: (v) => n(v, 'nailPerSqm'), unit: 'กก.' }],
-    hint: 'อัตราตะปูแก้ได้ตามหน้างาน (ค่าเริ่มต้น 0.2 กก. ต่อไม้แบบ 1 ตร.ม.)',
+    hint: 'อัตราตะปูแก้ได้ตามหน้างาน (ค่าเริ่มต้น 0.25 กก. ต่อไม้แบบ 1 ตร.ม.)',
   },
   manualQuantityItem(
     'str-column-rebar',
@@ -852,7 +865,8 @@ const STRUCTURE_ITEMS: readonly TakeoffItemDef[] = [
         key: 'nailPerSqm',
         label: 'ตะปูต่อไม้แบบ 1 ตร.ม.',
         unit: 'กก./ตร.ม.',
-        defaultValue: 0.2,
+        // ค่าที่ใช้จริงหน้างาน — ไม้แบบ 1 ตร.ม. ใช้ตะปู 0.25 กก.
+        defaultValue: 0.25,
         min: 0,
         step: 0.05,
         excludeFromWorking: true,
@@ -865,7 +879,7 @@ const STRUCTURE_ITEMS: readonly TakeoffItemDef[] = [
     workingExpr: (v) =>
       `(${f(n(v, 'depth'))} × 2 + ${f(n(v, 'width'))}) × ${f(n(v, 'length'))}`,
     components: [{ label: 'ตะปู', perUnit: (v) => n(v, 'nailPerSqm'), unit: 'กก.' }],
-    hint: 'อัตราตะปูแก้ได้ตามหน้างาน (ค่าเริ่มต้น 0.2 กก. ต่อไม้แบบ 1 ตร.ม.)',
+    hint: 'อัตราตะปูแก้ได้ตามหน้างาน (ค่าเริ่มต้น 0.25 กก. ต่อไม้แบบ 1 ตร.ม.)',
   },
   manualQuantityItem(
     'str-beam-rebar',
@@ -956,7 +970,8 @@ const STRUCTURE_ITEMS: readonly TakeoffItemDef[] = [
         key: 'nailPerSqm',
         label: 'ตะปูต่อไม้แบบ 1 ตร.ม.',
         unit: 'กก./ตร.ม.',
-        defaultValue: 0.2,
+        // ค่าที่ใช้จริงหน้างาน — ไม้แบบ 1 ตร.ม. ใช้ตะปู 0.25 กก.
+        defaultValue: 0.25,
         min: 0,
         step: 0.05,
         excludeFromWorking: true,
