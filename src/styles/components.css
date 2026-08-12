@@ -1222,6 +1222,24 @@
   gap: var(--mt-space-3);
 }
 
+.mt-preview__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--mt-space-2);
+}
+
+.mt-preview__brand img {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+}
+
+.mt-preview__brand span {
+  font-weight: 600;
+  font-size: var(--mt-text-sm);
+  color: var(--mt-text-muted);
+}
+
 .mt-preview h4 {
   font-size: var(--mt-text-md);
 }
@@ -1340,7 +1358,8 @@
   }
 
   .mt-preview__working,
-  .mt-preview__meta span {
+  .mt-preview__meta span,
+  .mt-preview__brand span {
     color: #444;
   }
 

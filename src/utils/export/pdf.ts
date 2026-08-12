@@ -67,6 +67,39 @@ export async function registerFont(doc: jsPDF): Promise<string> {
   return THAI_FONT_NAME;
 }
 
+const LOGO_URL = `${import.meta.env.BASE_URL}logo-crystal.jpg`;
+let logoCache: string | null | undefined;
+
+/** โลโก้บริษัทเป็น data URL สำหรับฝังใน PDF — แคชไว้ใช้ซ้ำได้ทุกไฟล์ที่ส่งออก */
+export async function loadLogoDataUrl(): Promise<string | null> {
+  if (logoCache !== undefined) return logoCache;
+  try {
+    const response = await fetch(LOGO_URL);
+    if (!response.ok || response.headers.get('content-type')?.includes('text/html')) {
+      logoCache = null;
+    } else {
+      logoCache = `data:image/jpeg;base64,${arrayBufferToBase64(await response.arrayBuffer())}`;
+    }
+  } catch {
+    logoCache = null;
+  }
+  return logoCache;
+}
+
+/** วาดโลโก้มุมซ้ายบน คงสัดส่วนภาพจริงตามความสูงที่กำหนด */
+export function drawLogo(doc: jsPDF, dataUrl: string | null, x = 14, y = 8, height = 14): void {
+  if (!dataUrl) return;
+  const props = doc.getImageProperties(dataUrl);
+  const width = (props.width / props.height) * height;
+  doc.addImage(dataUrl, 'JPEG', x, y, width, height);
+}
+
+/**
+ * เส้นฐานของบรรทัดข้อมูล (โครงการ/วันที่) — โลโก้กินพื้นที่ถึง 22mm
+ * และสระบนภาษาไทยลอยเหนือเส้นฐานราว 4mm จึงต้องเริ่มที่ 28mm ไม่งั้นทับกัน
+ */
+export const HEADER_META_Y = 28;
+
 export interface PdfExportOptions {
   /** PNG data URL of the marked-up drawing, appended as a reference page. */
   snapshot?: string;
@@ -77,9 +110,10 @@ export async function exportBoqToPdf(
   options: PdfExportOptions = {},
 ): Promise<void> {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-  const font = await registerFont(doc);
+  const [font, logo] = await Promise.all([registerFont(doc), loadLogoDataUrl()]);
   const pageWidth = doc.internal.pageSize.getWidth();
 
+  drawLogo(doc, logo);
   doc.setFont(font, 'bold');
   doc.setFontSize(16);
   doc.text('BILL OF QUANTITIES (BOQ)', pageWidth / 2, 16, { align: 'center' });
@@ -91,11 +125,15 @@ export async function exportBoqToPdf(
     `Drawing: ${report.drawingName || '-'}`,
   ];
   const metaRight = [`Scale: ${report.scaleLabel}`, `Date: ${formatDateTime(report.createdAt)}`];
-  metaLeft.forEach((line, i) => doc.text(line, 14, 24 + i * 5));
-  metaRight.forEach((line, i) => doc.text(line, pageWidth - 14, 24 + i * 5, { align: 'right' }));
+  metaLeft.forEach((line, i) => doc.text(line, 14, HEADER_META_Y + i * 5));
+  metaRight.forEach((line, i) =>
+    doc.text(line, pageWidth - 14, HEADER_META_Y + i * 5, { align: 'right' }),
+  );
+
+  const tableY = HEADER_META_Y + 14;
 
   autoTable(doc, {
-    startY: 38,
+    startY: tableY,
     head: [
       ['No.', 'Code', 'รายการ / Description', 'หมวดงาน', 'หน่วย', 'ปริมาณ', 'ราคา/หน่วย', 'จำนวนเงิน'],
     ],
@@ -122,7 +160,7 @@ export async function exportBoqToPdf(
     theme: 'grid',
   });
 
-  const afterTableY = getLastAutoTableY(doc, 38) + 8;
+  const afterTableY = getLastAutoTableY(doc, tableY) + 8;
   doc.setFont(font, 'bold');
   doc.setFontSize(11);
   doc.text(

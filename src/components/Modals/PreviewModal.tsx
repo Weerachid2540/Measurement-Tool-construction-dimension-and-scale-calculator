@@ -93,12 +93,23 @@ export function PreviewModal() {
         </>
       }
     >
+      <PreviewBrand />
       {previewKind === 'takeoff' && <TakeoffPreview />}
       {previewKind === 'cost' && <CostPreview />}
       {previewKind === 'boq' && <BoqPreview />}
     </Modal>
   );
 }
+
+const PreviewBrand = () => (
+  <div className="mt-preview__brand">
+    <img
+      src={`${import.meta.env.BASE_URL}logo-crystal.jpg`}
+      alt="Crystal Engineering Corporation"
+    />
+    <span>Crystal Engineering Corporation</span>
+  </div>
+);
 
 function TakeoffPreview() {
   const lines = useTakeoffStore((s) => s.lines);

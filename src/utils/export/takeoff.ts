@@ -4,7 +4,13 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { TakeoffItemDef, TakeoffLine, TakeoffReport } from '@/types';
 import { fileTimestamp, formatDateTime, formatNumber, sanitiseFileName } from '../format';
-import { getLastAutoTableY, registerFont } from './pdf';
+import {
+  drawLogo,
+  getLastAutoTableY,
+  HEADER_META_Y,
+  loadLogoDataUrl,
+  registerFont,
+} from './pdf';
 
 type ExcelModule = typeof ExcelJSNamespace & { default?: typeof ExcelJSNamespace };
 const Excel: typeof ExcelJSNamespace =
@@ -172,18 +178,22 @@ function buildMaterialSheet(workbook: ExcelJSNamespace.Workbook, report: Takeoff
 /** ตารางถอดแบบเป็น PDF สำหรับแนบเอกสารเสนอราคา */
 export async function exportTakeoffToPdf(report: TakeoffReport): Promise<void> {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-  const font = await registerFont(doc);
+  const [font, logo] = await Promise.all([registerFont(doc), loadLogoDataUrl()]);
   const pageWidth = doc.internal.pageSize.getWidth();
 
+  drawLogo(doc, logo);
   doc.setFont(font, 'bold');
   doc.setFontSize(16);
   doc.text('การคำนวณถอดแบบประมาณราคา', pageWidth / 2, 16, { align: 'center' });
 
   doc.setFont(font, 'normal');
   doc.setFontSize(10);
-  doc.text(`โครงการ: ${report.projectName || '-'}`, 14, 24);
-  doc.text(`วันที่: ${formatDateTime(report.createdAt)}`, pageWidth - 14, 24, { align: 'right' });
+  doc.text(`โครงการ: ${report.projectName || '-'}`, 14, HEADER_META_Y);
+  doc.text(`วันที่: ${formatDateTime(report.createdAt)}`, pageWidth - 14, HEADER_META_Y, {
+    align: 'right',
+  });
 
+  const tableY = HEADER_META_Y + 6;
   const body: (string | number)[][] = [];
   const categoryRows: number[] = [];
   const groupRows: number[] = [];
@@ -230,7 +240,7 @@ export async function exportTakeoffToPdf(report: TakeoffReport): Promise<void> {
   }
 
   autoTable(doc, {
-    startY: 30,
+    startY: tableY,
     head: [
       ['ลำดับ', 'รายการ', 'การคำนวณ', 'หน่วย', 'ปริมาณ', 'ราคา/หน่วย', 'จำนวนเงิน', 'หมายเหตุ'],
     ],
@@ -261,7 +271,7 @@ export async function exportTakeoffToPdf(report: TakeoffReport): Promise<void> {
     },
   });
 
-  const y = getLastAutoTableY(doc, 30) + 8;
+  const y = getLastAutoTableY(doc, tableY) + 8;
   doc.setFont(font, 'bold');
   doc.setFontSize(11);
   doc.text(`รวมทั้งสิ้น: ${formatNumber(report.total, 2)} บาท`, pageWidth - 14, y, {

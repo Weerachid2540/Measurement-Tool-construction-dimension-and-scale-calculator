@@ -6,7 +6,13 @@ import type { CostEntry, CostReport } from '@/types';
 import { LABOUR_TYPES } from '@/types';
 import { fileTimestamp, formatDateTime, formatNumber, sanitiseFileName } from '../format';
 import { travelAmount } from '../cost';
-import { getLastAutoTableY, registerFont } from './pdf';
+import {
+  drawLogo,
+  getLastAutoTableY,
+  HEADER_META_Y,
+  loadLogoDataUrl,
+  registerFont,
+} from './pdf';
 
 type ExcelModule = typeof ExcelJSNamespace & { default?: typeof ExcelJSNamespace };
 const Excel: typeof ExcelJSNamespace =
@@ -141,20 +147,25 @@ function buildEntrySheet(
 /** ต้นทุนหน้างานเป็น PDF สำหรับส่งรายงานให้เจ้าของงาน */
 export async function exportCostToPdf(report: CostReport): Promise<void> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const font = await registerFont(doc);
+  const [font, logo] = await Promise.all([registerFont(doc), loadLogoDataUrl()]);
   const pageWidth = doc.internal.pageSize.getWidth();
 
+  drawLogo(doc, logo);
   doc.setFont(font, 'bold');
   doc.setFontSize(16);
   doc.text('รายงานต้นทุนหน้างาน', pageWidth / 2, 16, { align: 'center' });
 
   doc.setFont(font, 'normal');
   doc.setFontSize(10);
-  doc.text(`โครงการ: ${report.projectName || '-'}`, 14, 24);
-  doc.text(`วันที่: ${formatDateTime(report.createdAt)}`, pageWidth - 14, 24, { align: 'right' });
+  doc.text(`โครงการ: ${report.projectName || '-'}`, 14, HEADER_META_Y);
+  doc.text(`วันที่: ${formatDateTime(report.createdAt)}`, pageWidth - 14, HEADER_META_Y, {
+    align: 'right',
+  });
+
+  const tableY = HEADER_META_Y + 6;
 
   autoTable(doc, {
-    startY: 30,
+    startY: tableY,
     head: [['วันที่', 'รายการวัสดุ', 'ร้านค้า', 'เลขที่บิล', 'ราคารวม (VAT)', 'หมายเหตุ']],
     body: report.materials.map((entry) => [
       entry.date,
@@ -173,7 +184,7 @@ export async function exportCostToPdf(report: CostReport): Promise<void> {
   });
 
   autoTable(doc, {
-    startY: getLastAutoTableY(doc, 30) + 8,
+    startY: getLastAutoTableY(doc, tableY) + 8,
     head: [
       [
         'วันที่',
@@ -211,7 +222,7 @@ export async function exportCostToPdf(report: CostReport): Promise<void> {
     theme: 'grid',
   });
 
-  const y = getLastAutoTableY(doc, 30) + 10;
+  const y = getLastAutoTableY(doc, tableY) + 10;
   doc.setFont(font, 'bold');
   doc.setFontSize(12);
   doc.text(`รวมต้นทุนทั้งสิ้น: ${formatNumber(report.totals.total, 2)} บาท`, pageWidth - 14, y, {
