@@ -64,11 +64,13 @@ export function FileDropzone({
         <>
           <Icon name="upload" size={44} strokeWidth={1.2} />
           <h2>ลากไฟล์แบบมาวาง หรือคลิกเพื่อเลือกไฟล์</h2>
-          <p>รองรับ PDF, JPG, PNG, WEBP สำหรับงาน 2D และ OBJ, GLB, GLTF, IFC สำหรับงาน 3D</p>
+          <p>รองรับ PDF, DXF, JPG, PNG, WEBP สำหรับงาน 2D และ OBJ, GLB, GLTF, IFC สำหรับงาน 3D</p>
           <ul className="mt-dropzone__hints">
             <li>ไฟล์ทั้งหมดประมวลผลในเครื่อง ไม่มีการอัปโหลดขึ้นเซิร์ฟเวอร์</li>
+            <li>DXF ได้ขนาดจริงจากไฟล์ ไม่ต้องปรับเทียบมาตราส่วนเลย</li>
             <li>PDF จะได้มาตราส่วนอ้างอิงกระดาษอัตโนมัติ</li>
             <li>ภาพถ่าย/สแกน ควรปรับเทียบด้วยเครื่องมือ Calibrate ก่อนวัด</li>
+            <li>ไฟล์ DWG ต้อง Save As เป็น DXF จาก AutoCAD ก่อน (DWG เป็นฟอร์แมตปิด)</li>
           </ul>
         </>
       ) : (

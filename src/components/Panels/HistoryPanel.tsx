@@ -10,6 +10,7 @@ import { exportSessionsJson } from '@/utils/db';
 const KIND_OPTIONS: { value: DocumentKind | 'all'; label: string }[] = [
   { value: 'all', label: 'ทุกชนิด' },
   { value: 'pdf', label: 'PDF' },
+  { value: 'cad', label: 'DXF (CAD)' },
   { value: 'image', label: 'รูปภาพ' },
   { value: 'model3d', label: 'โมเดล 3D' },
 ];

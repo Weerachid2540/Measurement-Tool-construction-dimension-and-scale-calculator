@@ -1,7 +1,13 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-import type { DocumentKind, LoadedDocument, RenderedPage, SourceDocument } from '@/types';
+import type {
+  DocumentKind,
+  LoadedDocument,
+  OpenedDocument,
+  RenderedPage,
+  SourceDocument,
+} from '@/types';
 import { createId } from './id';
 import { DEFAULT_IMAGE_DPI, dpiToPxPerMm, pdfRenderScaleToPxPerPaperMm } from './scale';
 
@@ -11,19 +17,34 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 const MAX_RASTER_DIMENSION = 4000;
 const TARGET_PDF_RENDER_SCALE = 3;
 
-export const ACCEPTED_2D_TYPES = '.pdf,.png,.jpg,.jpeg,.webp,image/*,application/pdf';
+export const ACCEPTED_2D_TYPES = '.pdf,.png,.jpg,.jpeg,.webp,.dxf,image/*,application/pdf';
 export const ACCEPTED_3D_TYPES = '.obj,.glb,.gltf,.ifc';
 
 export class UnsupportedFileError extends Error {
   constructor(fileName: string) {
-    super(`ไม่รองรับไฟล์ "${fileName}" — กรุณาใช้ PDF, JPG, PNG, WEBP, OBJ, GLB หรือ IFC`);
+    super(
+      `ไม่รองรับไฟล์ "${fileName}" — กรุณาใช้ PDF, DXF, JPG, PNG, WEBP, OBJ, GLB หรือ IFC`,
+    );
     this.name = 'UnsupportedFileError';
+  }
+}
+
+/** DWG เป็นฟอร์แมตปิดของ Autodesk อ่านในเบราว์เซอร์ไม่ได้ — บอกทางออกให้ชัดแทนที่จะบอกแค่ว่าไม่รองรับ */
+export class DwgNotSupportedError extends Error {
+  constructor() {
+    super(
+      'ไฟล์ DWG เป็นฟอร์แมตปิดของ Autodesk จึงเปิดตรง ๆ ไม่ได้ — ' +
+        'ให้เปิดใน AutoCAD แล้ว Save As เป็น .dxf (ไฟล์ > บันทึกเป็น > AutoCAD DXF) แล้วนำมาเปิดที่นี่',
+    );
+    this.name = 'DwgNotSupportedError';
   }
 }
 
 export function detectKind(file: File): DocumentKind {
   const name = file.name.toLowerCase();
+  if (name.endsWith('.dwg')) throw new DwgNotSupportedError();
   if (file.type === 'application/pdf' || name.endsWith('.pdf')) return 'pdf';
+  if (name.endsWith('.dxf')) return 'cad';
   if (file.type.startsWith('image/')) return 'image';
   if (/\.(obj|glb|gltf|ifc)$/.test(name)) return 'model3d';
   if (/\.(png|jpe?g|webp|bmp|gif)$/.test(name)) return 'image';
@@ -34,10 +55,22 @@ export function detectKind(file: File): DocumentKind {
 let activePdf: PDFDocumentProxy | null = null;
 let activePdfId: string | null = null;
 
-export async function loadDocument(file: File): Promise<LoadedDocument> {
+export async function loadDocument(file: File): Promise<OpenedDocument> {
   const kind = detectKind(file);
   if (kind === 'pdf') return loadPdf(file);
   if (kind === 'image') return loadImage(file);
+  if (kind === 'cad') {
+    // dxf-parser โหลดเมื่อใช้จริงเท่านั้น จึงไม่ติดไปกับบันเดิลแรก
+    const { loadDxf } = await import('./dxf');
+    const { doc, page, unitLabel, unitAssumed } = await loadDxf(file);
+    return {
+      doc,
+      page,
+      note: unitAssumed
+        ? `หน่วยในไฟล์ไม่ได้ระบุ — ตั้งเป็น${unitLabel}ให้ ควรวัดระยะที่รู้ค่าจริงเทียบก่อนใช้งาน`
+        : `หน่วยในไฟล์: ${unitLabel} — มาตราส่วนพร้อมใช้งาน ไม่ต้องปรับเทียบ`,
+    };
+  }
   throw new UnsupportedFileError(file.name);
 }
 

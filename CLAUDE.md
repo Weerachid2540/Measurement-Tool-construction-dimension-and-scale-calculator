@@ -87,6 +87,14 @@ ExcelJS + jsPDF · idb · vite-plugin-pwa
 
 - **ExcelJS** ต้อง alias ไป browser bundle ใน `vite.config.ts` ไม่งั้นดึง node polyfill เข้ามา
 - **pdf.js** worker import ด้วย `?url` และ `optimizeDeps.exclude` ห้าม pre-bundle
+- **DXF** — `src/utils/dxf.ts` แปลงเป็น **raster** แล้วป้อนเข้าท่อเดิมของ PDF จงใจทำแบบนี้เพื่อให้
+  เครื่องมือวัด BOQ ส่งออก ประวัติ และ auto-count ใช้โค้ดเดิมได้หมด · `DocumentKind = 'cad'`
+  ต้องบังคับ `ratio = 1` ใน `setDocument` เพราะพิกัด CAD เป็นขนาดจริงไม่ใช่ขนาดบนกระดาษ
+  ไม่งั้นสูตร `realMm = px / pxPerPaperMm × ratio` จะคูณซ้ำ · **ต้องกาง INSERT แบบเรียกซ้ำ**
+  ไม่งั้นแบบสถาปัตย์จะว่างเปล่าเพราะประตู/หน้าต่าง/สุขภัณฑ์เป็นบล็อกทั้งหมด
+  · **DWG เปิดไม่ได้** เป็นฟอร์แมตปิดของ Autodesk — `detectKind` โยน `DwgNotSupportedError`
+  พร้อมบอกวิธี Save As เป็น DXF (เคยพิจารณา LibreDWG-WASM แล้วไม่เอาเพราะอ่านไฟล์รุ่นใหม่ไม่ครบ
+  และบริการแปลงบนคลาวด์ขัดกับคำสัญญาในหน้าแรกว่าไฟล์ไม่ถูกอัปโหลดที่ไหน)
 - **web-ifc (IFC)** — ใช้ตัวเปล่าไม่ใช่ `web-ifc-three` (ตัวนั้นตรึง three รุ่นเก่าและเลิกดูแลแล้ว)
   ต้อง `optimizeDeps.exclude` เหมือน pdf.js · ส่ง path ของ `.wasm` เข้าไปทาง `Init(locateFile)`
   โดย import ด้วย `?url` ห้ามก๊อปไป `public/` เอง เพราะจะค้างเวอร์ชันเก่าเวลาอัปเดต package

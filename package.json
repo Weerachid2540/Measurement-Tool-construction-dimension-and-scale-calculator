@@ -1,7 +1,7 @@
 {
   "name": "measurement-tool",
   "private": true,
-  "version": "1.6.0",
+  "version": "1.7.0",
   "type": "module",
   "description": "Cost Estimation and Quantity Takeoff Services — quantity take-off, 2D/3D measurement, scale calibration and BOQ export",
   "scripts": {
@@ -12,6 +12,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "dxf-parser": "^1.1.2",
     "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
     "idb": "^8.0.0",

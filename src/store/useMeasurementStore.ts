@@ -159,7 +159,10 @@ export const useMeasurementStore = create<MeasurementStore>((set, get) => ({
         ...get().scale,
         pxPerPaperMm: page.pxPerPaperMm,
         // A PDF's paper size is known exactly, so it starts out calibrated.
-        calibrated: doc.kind === 'pdf',
+        // DXF ก็เช่นกัน แต่พิกัดที่เก็บเป็นขนาดจริงไม่ใช่ขนาดบนกระดาษ จึงต้องบังคับ
+        // อัตราส่วนเป็น 1:1 ไม่งั้นสูตร realMm = px / pxPerPaperMm × ratio จะคูณเกินไป
+        calibrated: doc.kind === 'pdf' || doc.kind === 'cad',
+        ...(doc.kind === 'cad' ? { presetId: '1:1', ratio: 1 } : {}),
       },
       view: { zoom: 1, x: 0, y: 0 },
     }),

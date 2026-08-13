@@ -31,15 +31,16 @@ export function useDocumentLoader() {
         }
 
         setBusy(`กำลังเปิด ${file.name}…`);
-        const { doc, page } = await loadDocument(file);
+        const { doc, page, note } = await loadDocument(file);
         setDocument(doc, page);
         setMode('2d');
-        notify(
-          doc.kind === 'pdf'
-            ? `เปิด ${doc.name} (${doc.pageCount} หน้า) — มาตราส่วนอ้างอิงกระดาษพร้อมใช้งาน`
-            : `เปิด ${doc.name} — แนะนำให้ปรับเทียบมาตราส่วนก่อนวัด`,
-          'success',
-        );
+
+        const message =
+          note ??
+          (doc.kind === 'pdf'
+            ? `(${doc.pageCount} หน้า) — มาตราส่วนอ้างอิงกระดาษพร้อมใช้งาน`
+            : '— แนะนำให้ปรับเทียบมาตราส่วนก่อนวัด');
+        notify(`เปิด ${doc.name} ${message}`, 'success');
       } catch (error) {
         notify(error instanceof Error ? error.message : 'เปิดไฟล์ไม่สำเร็จ', 'error');
       } finally {

@@ -1,4 +1,5 @@
-export type DocumentKind = 'image' | 'pdf' | 'model3d';
+/** `cad` คือ DXF ที่ถูกแปลงเป็น raster แล้ว — ต่างจาก `image` ตรงที่รู้มาตราส่วนจริง */
+export type DocumentKind = 'image' | 'pdf' | 'model3d' | 'cad';
 
 export interface SourceDocument {
   id: string;
@@ -24,4 +25,9 @@ export interface RenderedPage {
 export interface LoadedDocument {
   doc: SourceDocument;
   page: RenderedPage;
+}
+
+/** ข้อความแจ้งผู้ใช้หลังเปิดไฟล์สำเร็จ ต่างกันตามชนิดไฟล์ */
+export interface OpenedDocument extends LoadedDocument {
+  note?: string;
 }

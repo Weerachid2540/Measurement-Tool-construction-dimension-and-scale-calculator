@@ -5,6 +5,17 @@ import { formatDateTime } from '@/utils/format';
 /** Release notes, newest first. Keep in step with CHANGELOG.md. */
 const RELEASES: readonly { version: string; date: string; changes: string[] }[] = [
   {
+    version: '1.7.0',
+    date: '2026-08-13',
+    changes: [
+      'เปิดไฟล์ CAD (.dxf) มาวัดได้แล้ว ใช้เครื่องมือวัดและ BOQ ชุดเดิมทั้งหมด',
+      'DXF ไม่ต้องปรับเทียบมาตราส่วน — อ่านหน่วยและพิกัดจริงจากไฟล์ให้เลย',
+      'ไฟล์ DWG ต้อง Save As เป็น DXF จาก AutoCAD ก่อน (DWG เป็นฟอร์แมตปิดของ Autodesk)',
+      'เพิ่มปุ่ม "เปลี่ยนไฟล์" ทั้งหน้า 2D และ 3D',
+      'ถามก่อนทิ้งงาน เมื่อเปิดไฟล์ใหม่ทับการวัดที่ยังไม่ได้บันทึก',
+    ],
+  },
+  {
     version: '1.6.0',
     date: '2026-08-13',
     changes: [
