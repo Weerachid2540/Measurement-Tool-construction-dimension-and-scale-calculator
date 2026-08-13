@@ -255,6 +255,22 @@ export function Viewer3D() {
     setDistance(null);
   };
 
+  /** เอาโมเดลออกโดยไม่ต้องเปิดไฟล์ใหม่มาทับ — กลับไปหน้าลากไฟล์มาวาง */
+  const clearModel = () => {
+    const refs = sceneRef.current;
+    if (refs?.model) {
+      refs.scene.remove(refs.model);
+      disposeObject(refs.model);
+      refs.model = null;
+    }
+    clearMeasurement();
+    setHasModel(false);
+    setModelSize(null);
+    setIfcNote(null);
+    setMeasuring(false);
+    setSectionEnabled(false);
+  };
+
   return (
     <div className="mt-viewer3d">
       <div className="mt-viewer3d__stage" ref={containerRef} onPointerDown={handlePointerDown} />
@@ -285,6 +301,11 @@ export function Viewer3D() {
           <Button size="sm" icon="trash" onClick={clearMeasurement} disabled={!hasModel}>
             ล้างจุด
           </Button>
+          {hasModel && (
+            <Button size="sm" icon="close" onClick={clearModel} title="เอาโมเดลออกจากหน้านี้">
+              ลบโมเดล
+            </Button>
+          )}
         </div>
 
         <div className="mt-viewer3d__row">

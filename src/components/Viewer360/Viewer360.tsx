@@ -232,6 +232,19 @@ export function Viewer360() {
   // ปล่อยหน่วยความจำและหยุดวิดีโอเมื่อออกจากหน้านี้ ไม่งั้นเสียงยังดังต่อ
   useEffect(() => releaseMedia, [releaseMedia]);
 
+  /** เอาไฟล์ออกโดยไม่ต้องเปิดไฟล์ใหม่มาทับ — กลับไปหน้าลากไฟล์มาวาง */
+  const clearMedia = useCallback(() => {
+    const refs = sceneRef.current;
+    releaseMedia();
+    if (refs) {
+      disposeMaterial(refs.mesh.material);
+      refs.mesh.material = new THREE.MeshBasicMaterial({ color: 0x1e293b });
+    }
+    setMediaKind(null);
+    setFileName('');
+    setWarning(null);
+  }, [releaseMedia]);
+
   /* ------------------------------ ตัวควบคุมวิดีโอ ------------------------------ */
   useEffect(() => {
     const video = videoRef.current;
@@ -306,6 +319,12 @@ export function Viewer360() {
           <Button size="sm" icon="expand" onClick={toggleFullscreen} disabled={!hasMedia}>
             เต็มจอ
           </Button>
+
+          {hasMedia && (
+            <Button size="sm" icon="trash" onClick={clearMedia} title="เอาไฟล์ออกจากหน้านี้">
+              ลบไฟล์
+            </Button>
+          )}
         </div>
 
         {mediaKind === 'video' && duration > 0 && (

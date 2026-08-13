@@ -9,6 +9,7 @@ export function Header() {
   const isDirty = useMeasurementStore((s) => s.isDirty);
   const doc = useMeasurementStore((s) => s.doc);
   const newSession = useMeasurementStore((s) => s.newSession);
+  const closeDocument = useMeasurementStore((s) => s.closeDocument);
   const theme = useUiStore((s) => s.theme);
   const toggleTheme = useUiStore((s) => s.toggleTheme);
   const openModal = useUiStore((s) => s.openModal);
@@ -70,6 +71,19 @@ export function Header() {
             }
           }}
         />
+        {/* ต่างจากปุ่มด้านบนตรงที่เอาไฟล์แบบออกไปด้วย ไม่ใช่แค่ล้างการวัด */}
+        {doc && (
+          <Button
+            icon="trash"
+            iconOnly
+            title="ลบไฟล์แบบออกจากพื้นที่ทำงาน"
+            onClick={() => {
+              if (!isDirty || window.confirm('การวัดที่ยังไม่บันทึกจะหายไป — ลบไฟล์ออกหรือไม่?')) {
+                closeDocument();
+              }
+            }}
+          />
+        )}
         <Button
           icon="info"
           iconOnly
