@@ -87,6 +87,10 @@ ExcelJS + jsPDF · idb · vite-plugin-pwa
 
 - **ExcelJS** ต้อง alias ไป browser bundle ใน `vite.config.ts` ไม่งั้นดึง node polyfill เข้ามา
 - **pdf.js** worker import ด้วย `?url` และ `optimizeDeps.exclude` ห้าม pre-bundle
+- **โหมด 360** (`src/components/Viewer360/`) — ภาพ equirectangular แปะผิว**ด้านใน**ทรงกลม
+  (`geometry.scale(-1, 1, 1)`) กล้องอยู่กลาง · OrbitControls ต้องตั้ง `rotateSpeed` เป็น**ค่าติดลบ**
+  ไม่งั้นลากแล้วภาพสวนนิ้ว และต้องปิด `enableZoom` เพราะขยับกล้องออกจากศูนย์กลางไม่ได้ —
+  ซูมด้วยการปรับ `camera.fov` แทน · ไม่ผ่าน `loadDocument` เพราะไม่ใช่เอกสารที่เอาไปวัด
 - **DXF** — `src/utils/dxf.ts` แปลงเป็น **raster** แล้วป้อนเข้าท่อเดิมของ PDF จงใจทำแบบนี้เพื่อให้
   เครื่องมือวัด BOQ ส่งออก ประวัติ และ auto-count ใช้โค้ดเดิมได้หมด · `DocumentKind = 'cad'`
   ต้องบังคับ `ratio = 1` ใน `setDocument` เพราะพิกัด CAD เป็นขนาดจริงไม่ใช่ขนาดบนกระดาษ

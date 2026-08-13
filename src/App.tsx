@@ -18,6 +18,9 @@ import { PreviewModal } from '@/components/Modals/PreviewModal';
 const Viewer3D = lazy(() =>
   import('@/components/Viewer3D/Viewer3D').then((module) => ({ default: module.Viewer3D })),
 );
+const Viewer360 = lazy(() =>
+  import('@/components/Viewer360/Viewer360').then((module) => ({ default: module.Viewer360 })),
+);
 
 export default function App() {
   const page = useMeasurementStore((s) => s.page);
@@ -45,6 +48,10 @@ export default function App() {
             {mode === '3d' ? (
               <Suspense fallback={<div className="mt-loading">กำลังโหลดโปรแกรมดูโมเดล 3D…</div>}>
                 <Viewer3D />
+              </Suspense>
+            ) : mode === '360' ? (
+              <Suspense fallback={<div className="mt-loading">กำลังโหลดโปรแกรมดูภาพ 360…</div>}>
+                <Viewer360 />
               </Suspense>
             ) : page ? (
               <MeasureCanvas />

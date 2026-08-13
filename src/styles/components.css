@@ -1214,6 +1214,25 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ภาพ 360 ที่สัดส่วนไม่ใช่ 2:1 จะดูเพี้ยนแต่ยังแสดงได้ จึงเตือนไม่ใช่ปฏิเสธ */
+.mt-warning-text {
+  margin-top: var(--mt-space-1);
+  font-size: var(--mt-text-xs);
+  color: var(--mt-warning);
+}
+
+/* เต็มจอแล้วแถบควบคุมต้องลอยทับภาพ ไม่งั้นกินพื้นที่จนภาพเหลือนิดเดียว */
+.mt-viewer3d:fullscreen {
+  background: #000;
+}
+
+.mt-viewer3d:fullscreen .mt-viewer3d__controls {
+  position: absolute;
+  inset: auto 0 0 0;
+  background: color-mix(in srgb, var(--mt-bg-elevated) 85%, transparent);
+  border-top: none;
+}
+
 /* --------------------------------- preview ---------------------------------- */
 
 .mt-preview {

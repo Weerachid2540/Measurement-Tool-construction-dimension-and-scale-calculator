@@ -50,6 +50,10 @@ const PATHS = {
   menu: 'M4 7h16M4 12h16M4 17h16',
   info: 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 11v6M12 8h.01',
   warning: 'M12 4l9 16H3zM12 10v4M12 17h.01',
+  panorama: 'M12 3a9 9 0 100 18 9 9 0 000-18zM3 12h18M12 3c2.5 2.4 4 5.5 4 9s-1.5 6.6-4 9c-2.5-2.4-4-5.5-4-9s1.5-6.6 4-9z',
+  play: 'M7 4l13 8-13 8z',
+  pause: 'M8 4h3v16H8zM13 4h3v16h-3z',
+  expand: 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5M9 15l-5 5M15 9l5-5M15 15l5 5M9 9L4 4',
 } as const;
 
 export type IconName = keyof typeof PATHS;

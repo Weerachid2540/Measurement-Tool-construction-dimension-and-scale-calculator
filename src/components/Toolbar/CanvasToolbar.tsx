@@ -1,9 +1,20 @@
-import { useMeasurementStore, useUiStore, selectCanRedo, selectCanUndo } from '@/store';
-import { useDocumentLoader } from '@/hooks';
-import { Button, Checkbox, Icon, NumberInput, Select } from '@/components/common';
-import { formatNumber } from '@/utils/format';
-import { ScaleControl } from './ScaleControl';
-import { ToolBar } from './ToolBar';
+import {
+  useMeasurementStore,
+  useUiStore,
+  selectCanRedo,
+  selectCanUndo,
+} from "@/store";
+import { useDocumentLoader } from "@/hooks";
+import {
+  Button,
+  Checkbox,
+  Icon,
+  NumberInput,
+  Select,
+} from "@/components/common";
+import { formatNumber } from "@/utils/format";
+import { ScaleControl } from "./ScaleControl";
+import { ToolBar } from "./ToolBar";
 
 export function CanvasToolbar() {
   const doc = useMeasurementStore((s) => s.doc);
@@ -23,72 +34,106 @@ export function CanvasToolbar() {
   const setMode = useUiStore((s) => s.setMode);
   const { goToPage } = useDocumentLoader();
 
-  const is3d = mode === '3d';
+  const is3d = mode === "3d";
+  const is360 = mode === "360";
+  const is2d = mode === "2d";
 
   return (
     <div className="mt-canvas-toolbar">
-      {/* เครื่องมือวัดย้ายมาอยู่แถวเดียวกับตัวควบคุมแบบ เพื่อคืนความกว้างทั้งหมดให้พื้นที่วาด */}
-      <ToolBar />
+      {/* เครื่องมือวัด มาตราส่วน กริด และ undo/redo ใช้ได้เฉพาะงาน 2D
+          โหมด 3D กับ 360 ไม่ได้ผูกกับสิ่งเหล่านี้เลย ปล่อยไว้จะเป็นปุ่มตายเต็มแถบ */}
+      {is2d && (
+        <>
+          {/* เครื่องมือวัดย้ายมาอยู่แถวเดียวกับตัวควบคุมแบบ เพื่อคืนความกว้างทั้งหมดให้พื้นที่วาด */}
+          <ToolBar />
 
-      <div className="mt-canvas-toolbar__section">
-        <ScaleControl />
-      </div>
+          <div className="mt-canvas-toolbar__section">
+            <ScaleControl />
+          </div>
 
-      <div className="mt-canvas-toolbar__section">
-        <div className="mt-btn-group">
-          <Button icon="undo" iconOnly onClick={undo} disabled={!canUndo} title="ย้อนกลับ (Ctrl+Z)" />
-          <Button icon="redo" iconOnly onClick={redo} disabled={!canRedo} title="ทำซ้ำ (Ctrl+Y)" />
-        </div>
-
-        <div className="mt-btn-group">
-          <Button icon="zoomOut" iconOnly onClick={() => zoomBy(1 / 1.2)} title="ซูมออก (-)" />
-          <span className="mt-zoom-readout">{formatNumber(view.zoom * 100, 0)}%</span>
-          <Button icon="zoomIn" iconOnly onClick={() => zoomBy(1.2)} title="ซูมเข้า (+)" />
-          <Button
-            icon="fit"
-            iconOnly
-            onClick={() => resetView(currentContainerSize())}
-            title="พอดีหน้าจอ (0)"
-          />
-        </div>
-
-        <div className="mt-inline-group">
-          <Button
-            icon="grid"
-            active={grid.enabled}
-            onClick={() => setGrid({ enabled: !grid.enabled })}
-            size="sm"
-            title="แสดง/ซ่อนเส้นกริด"
-          >
-            กริด
-          </Button>
-          {grid.enabled && (
-            <>
-              <NumberInput
-                value={grid.spacing}
-                min={0.01}
-                step={0.5}
-                onValueChange={(spacing) => setGrid({ spacing: spacing > 0 ? spacing : 1 })}
-                suffix={grid.unit}
-                style={{ width: 76 }}
+          <div className="mt-canvas-toolbar__section">
+            <div className="mt-btn-group">
+              <Button
+                icon="undo"
+                iconOnly
+                onClick={undo}
+                disabled={!canUndo}
+                title="ย้อนกลับ (Ctrl+Z)"
               />
+              <Button
+                icon="redo"
+                iconOnly
+                onClick={redo}
+                disabled={!canRedo}
+                title="ทำซ้ำ (Ctrl+Y)"
+              />
+            </div>
+
+            <div className="mt-btn-group">
+              <Button
+                icon="zoomOut"
+                iconOnly
+                onClick={() => zoomBy(1 / 1.2)}
+                title="ซูมออก (-)"
+              />
+              <span className="mt-zoom-readout">
+                {formatNumber(view.zoom * 100, 0)}%
+              </span>
+              <Button
+                icon="zoomIn"
+                iconOnly
+                onClick={() => zoomBy(1.2)}
+                title="ซูมเข้า (+)"
+              />
+              <Button
+                icon="fit"
+                iconOnly
+                onClick={() => resetView(currentContainerSize())}
+                title="พอดีหน้าจอ (0)"
+              />
+            </div>
+
+            <div className="mt-inline-group">
+              <Button
+                icon="grid"
+                active={grid.enabled}
+                onClick={() => setGrid({ enabled: !grid.enabled })}
+                size="sm"
+                title="แสดง/ซ่อนเส้นกริด"
+              >
+                กริด
+              </Button>
+              {grid.enabled && (
+                <>
+                  <NumberInput
+                    value={grid.spacing}
+                    min={0.01}
+                    step={0.5}
+                    onValueChange={(spacing) =>
+                      setGrid({ spacing: spacing > 0 ? spacing : 1 })
+                    }
+                    suffix={grid.unit}
+                    style={{ width: 76 }}
+                  />
+                  <Checkbox
+                    label="สแนป"
+                    checked={grid.snapToGrid}
+                    onCheckedChange={(snapToGrid) => setGrid({ snapToGrid })}
+                  />
+                </>
+              )}
               <Checkbox
-                label="สแนป"
-                checked={grid.snapToGrid}
-                onCheckedChange={(snapToGrid) => setGrid({ snapToGrid })}
+                label="จับจุด"
+                checked={snap.toVertices}
+                onCheckedChange={(toVertices) => setSnap({ toVertices })}
               />
-            </>
-          )}
-          <Checkbox
-            label="จับจุด"
-            checked={snap.toVertices}
-            onCheckedChange={(toVertices) => setSnap({ toVertices })}
-          />
-        </div>
-      </div>
+            </div>
+          </div>
+        </>
+      )}
 
       <div className="mt-canvas-toolbar__section mt-canvas-toolbar__section--end">
-        {doc?.kind === 'pdf' && doc.pageCount > 1 && (
+        {doc?.kind === "pdf" && doc.pageCount > 1 && (
           <div className="mt-pager">
             <Button
               icon="chevronLeft"
@@ -105,7 +150,9 @@ export function CanvasToolbar() {
                 value: String(i + 1),
                 label: `หน้า ${i + 1} / ${doc.pageCount}`,
               }))}
-              onValueChange={(value) => void goToPage(Number.parseInt(value, 10))}
+              onValueChange={(value) =>
+                void goToPage(Number.parseInt(value, 10))
+              }
               aria-label="เลือกหน้า"
             />
             <Button
@@ -120,13 +167,32 @@ export function CanvasToolbar() {
         )}
 
         <div className="mt-btn-group">
-          <Button size="sm" active={!is3d} onClick={() => setMode('2d')} title="โหมด 2D">
+          <Button
+            size="sm"
+            active={!is3d && !is360}
+            onClick={() => setMode("2d")}
+            title="โหมด 2D"
+          >
             <Icon name="layers" size={16} />
             2D
           </Button>
-          <Button size="sm" active={is3d} onClick={() => setMode('3d')} title="โหมด 3D">
+          <Button
+            size="sm"
+            active={is3d}
+            onClick={() => setMode("3d")}
+            title="โหมด 3D"
+          >
             <Icon name="cube" size={16} />
             3D
+          </Button>
+          <Button
+            size="sm"
+            active={is360}
+            onClick={() => setMode("360")}
+            title="ดูภาพ/วิดีโอ 360 องศา"
+          >
+            <Icon name="panorama" size={16} />
+            360
           </Button>
         </div>
       </div>
@@ -136,7 +202,7 @@ export function CanvasToolbar() {
 
 /** The canvas element owns its size; read it back for "fit to screen". */
 function currentContainerSize(): { width: number; height: number } | undefined {
-  const element = document.querySelector<HTMLElement>('.mt-canvas');
+  const element = document.querySelector<HTMLElement>(".mt-canvas");
   if (!element) return undefined;
   return { width: element.clientWidth, height: element.clientHeight };
 }

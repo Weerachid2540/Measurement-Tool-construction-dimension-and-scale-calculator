@@ -5,6 +5,16 @@ import { formatDateTime } from '@/utils/format';
 /** Release notes, newest first. Keep in step with CHANGELOG.md. */
 const RELEASES: readonly { version: string; date: string; changes: string[] }[] = [
   {
+    version: '1.8.0',
+    date: '2026-08-13',
+    changes: [
+      'เพิ่มโหมด 360 — ดูภาพและวิดีโอพาโนรามาจากกล้อง 360 แยกเป็นหมวดที่สามถัดจาก 2D และ 3D',
+      'ลากเพื่อมองรอบตัว ซูมได้ ดูเต็มจอได้ วิดีโอมีปุ่มเล่น-หยุดและแถบเลื่อนตำแหน่ง',
+      'ไฟล์ .insp/.insv จาก Insta360 ต้องส่งออกเป็น JPG/MP4 ก่อน ส่วน Ricoh Theta ใช้ได้ทันที',
+      'แถบเครื่องมือซ่อนเครื่องมือวัด 2D เมื่ออยู่โหมด 3D หรือ 360',
+    ],
+  },
+  {
     version: '1.7.0',
     date: '2026-08-13',
     changes: [

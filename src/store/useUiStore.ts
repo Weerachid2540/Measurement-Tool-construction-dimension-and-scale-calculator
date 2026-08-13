@@ -11,7 +11,8 @@ export type PanelTab =
   | 'cost'
   | 'boq'
   | 'history';
-export type WorkspaceMode = '2d' | '3d';
+/** `360` คือหน้าดูภาพ/วิดีโอพาโนรามาจากกล้อง 360 แยกจากงานวัดโดยสิ้นเชิง */
+export type WorkspaceMode = '2d' | '3d' | '360';
 export type ThemeMode = 'dark' | 'light';
 
 export interface Toast {

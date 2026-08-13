@@ -19,6 +19,8 @@ const TARGET_PDF_RENDER_SCALE = 3;
 
 export const ACCEPTED_2D_TYPES = '.pdf,.png,.jpg,.jpeg,.webp,.dxf,image/*,application/pdf';
 export const ACCEPTED_3D_TYPES = '.obj,.glb,.gltf,.ifc';
+/** ภาพ/วิดีโอพาโนรามาแบบ equirectangular — ไม่ผ่าน loadDocument เพราะไม่ใช่เอกสารที่เอาไปวัด */
+export const ACCEPTED_360_TYPES = '.jpg,.jpeg,.png,.webp,.mp4,.webm,.mov';
 
 export class UnsupportedFileError extends Error {
   constructor(fileName: string) {

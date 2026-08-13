@@ -1,7 +1,7 @@
 {
   "name": "measurement-tool",
   "private": true,
-  "version": "1.7.0",
+  "version": "1.8.0",
   "type": "module",
   "description": "Cost Estimation and Quantity Takeoff Services — quantity take-off, 2D/3D measurement, scale calibration and BOQ export",
   "scripts": {
