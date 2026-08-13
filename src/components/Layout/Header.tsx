@@ -52,7 +52,11 @@ export function Header() {
       </div>
 
       <div className="mt-header__actions">
-        <FileDropzone onFile={(file) => void open(file)} variant="compact" />
+        <FileDropzone
+          onFile={(file) => void open(file)}
+          variant="compact"
+          label={doc ? 'เปลี่ยนไฟล์' : 'เปิดไฟล์'}
+        />
         <Button icon="save" variant="primary" onClick={() => void save()} title="บันทึก (Ctrl+S)">
           บันทึก
         </Button>

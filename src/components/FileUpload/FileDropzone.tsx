@@ -7,12 +7,15 @@ interface FileDropzoneProps {
   /** Rendered as a full-panel drop target rather than a compact button row. */
   variant?: 'full' | 'compact';
   accept?: string;
+  /** ข้อความบนปุ่มแบบ compact — เปลี่ยนเป็น "เปลี่ยนไฟล์" เมื่อมีไฟล์เปิดอยู่แล้ว */
+  label?: string;
 }
 
 export function FileDropzone({
   onFile,
   variant = 'full',
   accept = `${ACCEPTED_2D_TYPES},${ACCEPTED_3D_TYPES}`,
+  label = 'เปิดไฟล์',
 }: FileDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -61,7 +64,7 @@ export function FileDropzone({
         <>
           <Icon name="upload" size={44} strokeWidth={1.2} />
           <h2>ลากไฟล์แบบมาวาง หรือคลิกเพื่อเลือกไฟล์</h2>
-          <p>รองรับ PDF, JPG, PNG, WEBP สำหรับงาน 2D และ OBJ, GLB, GLTF สำหรับงาน 3D</p>
+          <p>รองรับ PDF, JPG, PNG, WEBP สำหรับงาน 2D และ OBJ, GLB, GLTF, IFC สำหรับงาน 3D</p>
           <ul className="mt-dropzone__hints">
             <li>ไฟล์ทั้งหมดประมวลผลในเครื่อง ไม่มีการอัปโหลดขึ้นเซิร์ฟเวอร์</li>
             <li>PDF จะได้มาตราส่วนอ้างอิงกระดาษอัตโนมัติ</li>
@@ -71,7 +74,7 @@ export function FileDropzone({
       ) : (
         <button type="button" className="mt-btn mt-btn--secondary mt-btn--md" onClick={openPicker}>
           <Icon name="upload" size={18} />
-          เปิดไฟล์
+          {label}
         </button>
       )}
     </div>

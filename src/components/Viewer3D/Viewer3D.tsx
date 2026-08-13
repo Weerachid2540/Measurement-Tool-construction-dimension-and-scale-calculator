@@ -271,6 +271,7 @@ export function Viewer3D() {
             onFile={(file) => void loadModel(file)}
             variant="compact"
             accept={ACCEPTED_3D_TYPES}
+            label={hasModel ? 'เปลี่ยนไฟล์' : 'เปิดไฟล์'}
           />
           <Button
             size="sm"

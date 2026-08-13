@@ -13,12 +13,24 @@ export function useDocumentLoader() {
   const open = useCallback(
     async (file: File): Promise<void> => {
       try {
-        setBusy(`กำลังเปิด ${file.name}…`);
         if (detectKind(file) === 'model3d') {
           setMode('3d');
           notify('เปิดโหมด 3D — เลือกไฟล์โมเดลอีกครั้งในหน้าต่าง 3D', 'info');
           return;
         }
+
+        // เปิดแบบใหม่แล้ว setDocument ล้างการวัดกับ undo/redo ทิ้งทั้งหมด ต้องถามก่อน
+        // ไม่งั้นกดพลาดครั้งเดียวงานหายหมด (ปุ่ม "เริ่มการวัดใหม่" ก็ถามแบบเดียวกัน)
+        const { doc: openDoc, isDirty } = useMeasurementStore.getState();
+        if (
+          openDoc &&
+          isDirty &&
+          !window.confirm('การวัดที่ยังไม่บันทึกจะหายไป — เปิดไฟล์ใหม่หรือไม่?')
+        ) {
+          return;
+        }
+
+        setBusy(`กำลังเปิด ${file.name}…`);
         const { doc, page } = await loadDocument(file);
         setDocument(doc, page);
         setMode('2d');
