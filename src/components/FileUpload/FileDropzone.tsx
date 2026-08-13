@@ -9,13 +9,29 @@ interface FileDropzoneProps {
   accept?: string;
   /** ข้อความบนปุ่มแบบ compact — เปลี่ยนเป็น "เปลี่ยนไฟล์" เมื่อมีไฟล์เปิดอยู่แล้ว */
   label?: string;
+  /** ข้อความในแบบเต็มแผง — ค่าปริยายเป็นของหน้าแรกที่รับได้ทั้ง 2D และ 3D
+   *  หน้า 3D กับ 360 รับไฟล์คนละชุด จึงต้องส่งข้อความของตัวเองมา */
+  title?: string;
+  description?: string;
+  hints?: string[];
 }
+
+const DEFAULT_HINTS = [
+  'ไฟล์ทั้งหมดประมวลผลในเครื่อง ไม่มีการอัปโหลดขึ้นเซิร์ฟเวอร์',
+  'DXF ได้ขนาดจริงจากไฟล์ ไม่ต้องปรับเทียบมาตราส่วนเลย',
+  'PDF จะได้มาตราส่วนอ้างอิงกระดาษอัตโนมัติ',
+  'ภาพถ่าย/สแกน ควรปรับเทียบด้วยเครื่องมือ Calibrate ก่อนวัด',
+  'ไฟล์ DWG ต้อง Save As เป็น DXF จาก AutoCAD ก่อน (DWG เป็นฟอร์แมตปิด)',
+];
 
 export function FileDropzone({
   onFile,
   variant = 'full',
   accept = `${ACCEPTED_2D_TYPES},${ACCEPTED_3D_TYPES}`,
   label = 'เปิดไฟล์',
+  title = 'ลากไฟล์แบบมาวาง หรือคลิกเพื่อเลือกไฟล์',
+  description = 'รองรับ PDF, DXF, JPG, PNG, WEBP สำหรับงาน 2D และ OBJ, GLB, GLTF, IFC สำหรับงาน 3D',
+  hints = DEFAULT_HINTS,
 }: FileDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -63,14 +79,12 @@ export function FileDropzone({
       {variant === 'full' ? (
         <>
           <Icon name="upload" size={44} strokeWidth={1.2} />
-          <h2>ลากไฟล์แบบมาวาง หรือคลิกเพื่อเลือกไฟล์</h2>
-          <p>รองรับ PDF, DXF, JPG, PNG, WEBP สำหรับงาน 2D และ OBJ, GLB, GLTF, IFC สำหรับงาน 3D</p>
+          <h2>{title}</h2>
+          <p>{description}</p>
           <ul className="mt-dropzone__hints">
-            <li>ไฟล์ทั้งหมดประมวลผลในเครื่อง ไม่มีการอัปโหลดขึ้นเซิร์ฟเวอร์</li>
-            <li>DXF ได้ขนาดจริงจากไฟล์ ไม่ต้องปรับเทียบมาตราส่วนเลย</li>
-            <li>PDF จะได้มาตราส่วนอ้างอิงกระดาษอัตโนมัติ</li>
-            <li>ภาพถ่าย/สแกน ควรปรับเทียบด้วยเครื่องมือ Calibrate ก่อนวัด</li>
-            <li>ไฟล์ DWG ต้อง Save As เป็น DXF จาก AutoCAD ก่อน (DWG เป็นฟอร์แมตปิด)</li>
+            {hints.map((hint) => (
+              <li key={hint}>{hint}</li>
+            ))}
           </ul>
         </>
       ) : (

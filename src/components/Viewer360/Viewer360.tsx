@@ -292,7 +292,19 @@ export function Viewer360() {
 
       {!hasMedia && (
         <div className="mt-viewer3d__overlay">
-          <FileDropzone onFile={(file) => void loadMedia(file)} accept={ACCEPTED_360_TYPES} />
+          <FileDropzone
+            onFile={(file) => void loadMedia(file)}
+            accept={ACCEPTED_360_TYPES}
+            title="ลากภาพหรือวิดีโอ 360 มาวาง หรือคลิกเพื่อเลือกไฟล์"
+            description="รองรับภาพ JPG, PNG, WEBP และวิดีโอ MP4 (H.264), WebM"
+            hints={[
+              'ไฟล์ทั้งหมดประมวลผลในเครื่อง ไม่มีการอัปโหลดขึ้นเซิร์ฟเวอร์',
+              'ต้องเป็นภาพแบบ equirectangular สัดส่วน 2:1 ซึ่งเป็นค่าปกติที่กล้อง 360 ส่งออกให้',
+              'กล้อง Ricoh Theta ให้ไฟล์ JPG/MP4 ที่เปิดได้ทันที',
+              'กล้อง Insta360 ให้ไฟล์ .insp/.insv ต้องส่งออกเป็น JPG/MP4 จากแอปของกล้องก่อน',
+              'หน้านี้ใช้ดูสภาพหน้างานเท่านั้น ไม่มีข้อมูลระยะให้วัด',
+            ]}
+          />
         </div>
       )}
 

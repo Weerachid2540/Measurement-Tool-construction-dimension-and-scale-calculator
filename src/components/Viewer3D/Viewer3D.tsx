@@ -277,7 +277,18 @@ export function Viewer3D() {
 
       {!hasModel && (
         <div className="mt-viewer3d__overlay">
-          <FileDropzone onFile={(file) => void loadModel(file)} accept={ACCEPTED_3D_TYPES} />
+          <FileDropzone
+            onFile={(file) => void loadModel(file)}
+            accept={ACCEPTED_3D_TYPES}
+            title="ลากไฟล์โมเดล 3D มาวาง หรือคลิกเพื่อเลือกไฟล์"
+            description="รองรับ IFC, OBJ, GLB, GLTF"
+            hints={[
+              'ไฟล์ทั้งหมดประมวลผลในเครื่อง ไม่มีการอัปโหลดขึ้นเซิร์ฟเวอร์',
+              'IFC อ่านหน่วยความยาวจากไฟล์แล้วตั้งตัวคูณเป็นเมตรให้อัตโนมัติ',
+              'IFC ตัดปริมาตรห้องและช่องเจาะออก ไม่ให้บังการคลิกวัดระยะ',
+              'เปิด IFC ครั้งแรกต้องออนไลน์ เพราะตัวอ่านไม่ได้เก็บไว้ใช้ออฟไลน์',
+            ]}
+          />
         </div>
       )}
 

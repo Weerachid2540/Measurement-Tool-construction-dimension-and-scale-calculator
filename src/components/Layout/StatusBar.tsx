@@ -1,4 +1,4 @@
-import { useMeasurementStore } from '@/store';
+import { useMeasurementStore, useUiStore } from '@/store';
 import { formatLength, formatNumber } from '@/utils/format';
 import { pxToRealMm, scaleLabel } from '@/utils/scale';
 
@@ -24,8 +24,13 @@ export function StatusBar() {
   const page = useMeasurementStore((s) => s.page);
   const measurements = useMeasurementStore((s) => s.measurements);
   const currentPage = useMeasurementStore((s) => s.currentPage);
+  const mode = useUiStore((s) => s.mode);
 
   const onPage = measurements.filter((m) => m.page === currentPage).length;
+
+  // ทุกอย่างในแถบนี้เป็นของงาน 2D — มาตราส่วน พิกัดเคอร์เซอร์ คำใบ้เครื่องมือ จำนวนรายการ
+  // โหมด 3D กับ 360 มีแถบอ่านค่าของตัวเองอยู่แล้ว ปล่อยไว้จะเป็นข้อมูลที่ไม่จริง
+  if (mode !== '2d') return null;
 
   return (
     <footer className="mt-statusbar">
