@@ -324,11 +324,16 @@ export function Viewer3D() {
           {modelSize && (
             <span className="mt-muted">
               {' '}
-              · ขนาดโมเดล {formatNumber(modelSize.x, 2)} × {formatNumber(modelSize.y, 2)} ×{' '}
-              {formatNumber(modelSize.z, 2)}
-              {' '}({formatNumber(modelSize.x * unitScale, 2)} ×{' '}
-              {formatNumber(modelSize.y * unitScale, 2)} ×{' '}
-              {formatNumber(modelSize.z * unitScale, 2)} m)
+              · ขนาดโมเดล {formatNumber(modelSize.x * unitScale, 2)} ×{' '}
+              {formatNumber(modelSize.y * unitScale, 2)} × {formatNumber(modelSize.z * unitScale, 2)} m
+              {/* หน่วยโมเดลไม่ใช่เมตรค่อยกางเลขดิบให้ดู ไม่งั้นวงเล็บจะซ้ำกับตัวหน้าเป๊ะ ๆ */}
+              {unitScale !== 1 && (
+                <>
+                  {' '}
+                  ({formatNumber(modelSize.x, 2)} × {formatNumber(modelSize.y, 2)} ×{' '}
+                  {formatNumber(modelSize.z, 2)} หน่วยโมเดล)
+                </>
+              )}
             </span>
           )}
           {/* ให้เห็นหน่วยที่ระบบอ่านได้ทันที ถ้าตัวเลขเมตรดูผิดจะได้แก้ตัวคูณก่อนวัด */}

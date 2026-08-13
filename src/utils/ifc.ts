@@ -112,9 +112,9 @@ export async function loadIfc(buffer: ArrayBuffer): Promise<IfcLoadResult> {
       throw new Error('ไฟล์ IFC นี้ไม่มีรูปทรงที่แสดงผลได้ (อาจมีแต่ข้อมูลไม่มี geometry)');
     }
 
-    // IFC ใช้ Z ขึ้น ส่วน three ใช้ Y ขึ้น ไม่หมุนแล้วอาคารจะนอนตะแคง
-    group.rotation.x = -Math.PI / 2;
-
+    // ห้ามหมุนแกนที่นี่ — มาตรฐาน IFC ใช้ Z ขึ้นก็จริง แต่ web-ifc แปลงเป็น Y ขึ้น
+    // (แบบเดียวกับ three) มาให้แล้วตั้งแต่ชั้น WASM เคยใส่ rotation.x = -90° ไว้ตามสมมติฐาน
+    // ที่ผิด ผลคืออาคารนอนตะแคง ตรวจแล้วกับไฟล์จริง 1,627 ชิ้นส่วน
     return { object: group, metresPerUnit, unitLabel, elementCount };
   } finally {
     api.CloseModel(modelID);
