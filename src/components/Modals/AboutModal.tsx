@@ -5,6 +5,15 @@ import { formatDateTime } from '@/utils/format';
 /** Release notes, newest first. Keep in step with CHANGELOG.md. */
 const RELEASES: readonly { version: string; date: string; changes: string[] }[] = [
   {
+    version: '1.6.0',
+    date: '2026-08-13',
+    changes: [
+      'หน้า 3D เปิดไฟล์ IFC ได้แล้ว นอกจาก OBJ/GLB/GLTF เดิม',
+      'อ่านหน่วยความยาวจากไฟล์ IFC แล้วตั้งตัวคูณเป็นเมตรให้อัตโนมัติ พร้อมแสดงหน่วยและจำนวนชิ้นส่วนไว้ตรวจสอบ',
+      'ตัดปริมาตรห้อง (IFCSPACE) และช่องเจาะออกจากภาพ ไม่ให้บังการคลิกวัดระยะ',
+    ],
+  },
+  {
     version: '1.5.0',
     date: '2026-08-12',
     changes: [

@@ -12,11 +12,11 @@ const MAX_RASTER_DIMENSION = 4000;
 const TARGET_PDF_RENDER_SCALE = 3;
 
 export const ACCEPTED_2D_TYPES = '.pdf,.png,.jpg,.jpeg,.webp,image/*,application/pdf';
-export const ACCEPTED_3D_TYPES = '.obj,.glb,.gltf';
+export const ACCEPTED_3D_TYPES = '.obj,.glb,.gltf,.ifc';
 
 export class UnsupportedFileError extends Error {
   constructor(fileName: string) {
-    super(`ไม่รองรับไฟล์ "${fileName}" — กรุณาใช้ PDF, JPG, PNG, WEBP, OBJ หรือ GLB`);
+    super(`ไม่รองรับไฟล์ "${fileName}" — กรุณาใช้ PDF, JPG, PNG, WEBP, OBJ, GLB หรือ IFC`);
     this.name = 'UnsupportedFileError';
   }
 }
@@ -25,7 +25,7 @@ export function detectKind(file: File): DocumentKind {
   const name = file.name.toLowerCase();
   if (file.type === 'application/pdf' || name.endsWith('.pdf')) return 'pdf';
   if (file.type.startsWith('image/')) return 'image';
-  if (/\.(obj|glb|gltf)$/.test(name)) return 'model3d';
+  if (/\.(obj|glb|gltf|ifc)$/.test(name)) return 'model3d';
   if (/\.(png|jpe?g|webp|bmp|gif)$/.test(name)) return 'image';
   throw new UnsupportedFileError(file.name);
 }

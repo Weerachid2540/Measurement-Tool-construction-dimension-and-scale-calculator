@@ -87,6 +87,12 @@ ExcelJS + jsPDF · idb · vite-plugin-pwa
 
 - **ExcelJS** ต้อง alias ไป browser bundle ใน `vite.config.ts` ไม่งั้นดึง node polyfill เข้ามา
 - **pdf.js** worker import ด้วย `?url` และ `optimizeDeps.exclude` ห้าม pre-bundle
+- **web-ifc (IFC)** — ใช้ตัวเปล่าไม่ใช่ `web-ifc-three` (ตัวนั้นตรึง three รุ่นเก่าและเลิกดูแลแล้ว)
+  ต้อง `optimizeDeps.exclude` เหมือน pdf.js · ส่ง path ของ `.wasm` เข้าไปทาง `Init(locateFile)`
+  โดย import ด้วย `?url` ห้ามก๊อปไป `public/` เอง เพราะจะค้างเวอร์ชันเก่าเวลาอัปเดต package
+  · ไฟล์ wasm **ไม่ได้** อยู่ใน precache ของ PWA (ใหญ่ ~3 MB และ 3D เป็นฟีเจอร์เสริม) จึงต้องออนไลน์
+  ตอนเปิด IFC ครั้งแรก · geometry ที่ได้เป็นหน่วยตามที่ไฟล์ประกาศ อ่านจาก `IFCUNITASSIGNMENT`
+  (Revit ส่งออกเป็นมิลลิเมตรเป็นส่วนใหญ่ — วัดผิดหน่วยคือผิด 1000 เท่า)
 - **ฟอนต์ไทยใน PDF** — jsPDF ไม่มีมาให้ ต้องวาง `public/fonts/Sarabun-Regular.ttf` เอง
   ถ้าไม่มีจะ fallback เป็น Helvetica แล้วภาษาไทยเพี้ยน (Excel ไม่มีปัญหานี้)
 - **PowerShell 5.1** ไม่มี `&&` ใช้ `;` แทน

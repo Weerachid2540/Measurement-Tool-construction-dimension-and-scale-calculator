@@ -37,6 +37,10 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,jpg,jpeg,woff,woff2,ttf}'],
+        // ตัวอ่าน IFC เป็น JS 3.5 MB + wasm 1.3 MB แต่ 3D เป็นฟีเจอร์เสริมที่แทบไม่มีใครเปิด
+        // ถ้าปล่อยให้เข้า precache ผู้ใช้ทุกคนต้องโหลดตั้งแต่ติดตั้งแอป ทั้งที่ .wasm ไม่ได้เข้าอยู่ดี
+        // (globPatterns ไม่มี wasm) จึงใช้ออฟไลน์ไม่ได้แม้แคชไว้ — ตัดทิ้งทั้งคู่ ให้โหลดตอนใช้จริง
+        globIgnores: ['**/web-ifc-api-*.js'],
         maximumFileSizeToCacheInBytes: 12 * 1024 * 1024,
         cleanupOutdatedCaches: true,
       },
@@ -60,7 +64,9 @@ export default defineConfig({
   },
 
   // pdf.js ships its worker as an ESM file that must not be pre-bundled.
-  optimizeDeps: { exclude: ['pdfjs-dist'] },
+  // web-ifc is WASM glue code — esbuild's pre-bundling rewrites its module layout
+  // and the runtime then fails to locate the .wasm file.
+  optimizeDeps: { exclude: ['pdfjs-dist', 'web-ifc'] },
 
   build: {
     target: 'es2020',

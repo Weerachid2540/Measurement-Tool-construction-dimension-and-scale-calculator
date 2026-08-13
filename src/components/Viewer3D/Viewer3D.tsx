@@ -6,6 +6,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { Button, Checkbox, Field, NumberInput } from '@/components/common';
 import { FileDropzone } from '@/components/FileUpload/FileDropzone';
 import { ACCEPTED_3D_TYPES } from '@/utils/fileLoader';
+import { loadIfc } from '@/utils/ifc';
 import { formatNumber } from '@/utils/format';
 import { useUiStore } from '@/store';
 
@@ -40,6 +41,8 @@ export function Viewer3D() {
   const [sectionEnabled, setSectionEnabled] = useState(false);
   const [sectionHeight, setSectionHeight] = useState(0);
   const [modelSize, setModelSize] = useState<THREE.Vector3 | null>(null);
+  /** ข้อมูลหน่วยที่อ่านได้จากไฟล์ IFC — ไฟล์อื่นไม่ประกาศหน่วยจึงเป็น null */
+  const [ifcNote, setIfcNote] = useState<string | null>(null);
 
   /* ------------------------------- scene setup ------------------------------- */
   useEffect(() => {
@@ -119,13 +122,26 @@ export function Viewer3D() {
     async (file: File) => {
       const refs = sceneRef.current;
       if (!refs) return;
-      const url = URL.createObjectURL(file);
+      const name = file.name.toLowerCase();
+      const isIfc = name.endsWith('.ifc');
+      // IFC อ่านจาก ArrayBuffer ตรง ๆ ไม่ต้องผ่าน object URL เหมือน loader ของ three
+      const url = isIfc ? null : URL.createObjectURL(file);
       try {
         setBusy(`กำลังโหลด ${file.name}…`);
-        const name = file.name.toLowerCase();
-        const object = name.endsWith('.obj')
-          ? await new OBJLoader().loadAsync(url)
-          : (await new GLTFLoader().loadAsync(url)).scene;
+
+        let object: THREE.Object3D;
+        if (isIfc) {
+          const result = await loadIfc(await file.arrayBuffer());
+          object = result.object;
+          // ไฟล์จาก Revit ส่วนใหญ่เป็นมิลลิเมตร ตั้งตัวคูณให้อัตโนมัติ ไม่งั้นวัดผิด 1000 เท่า
+          setUnitScale(result.metresPerUnit);
+          setIfcNote(`IFC · ${result.elementCount} ชิ้นส่วน · หน่วยในไฟล์ ${result.unitLabel}`);
+        } else {
+          object = name.endsWith('.obj')
+            ? await new OBJLoader().loadAsync(url!)
+            : (await new GLTFLoader().loadAsync(url!)).scene;
+          setIfcNote(null);
+        }
 
         if (refs.model) {
           refs.scene.remove(refs.model);
@@ -164,7 +180,7 @@ export function Viewer3D() {
       } catch (error) {
         notify(error instanceof Error ? error.message : 'โหลดโมเดลไม่สำเร็จ', 'error');
       } finally {
-        URL.revokeObjectURL(url);
+        if (url) URL.revokeObjectURL(url);
         setBusy(null);
       }
     },
@@ -310,8 +326,13 @@ export function Viewer3D() {
               {' '}
               · ขนาดโมเดล {formatNumber(modelSize.x, 2)} × {formatNumber(modelSize.y, 2)} ×{' '}
               {formatNumber(modelSize.z, 2)}
+              {' '}({formatNumber(modelSize.x * unitScale, 2)} ×{' '}
+              {formatNumber(modelSize.y * unitScale, 2)} ×{' '}
+              {formatNumber(modelSize.z * unitScale, 2)} m)
             </span>
           )}
+          {/* ให้เห็นหน่วยที่ระบบอ่านได้ทันที ถ้าตัวเลขเมตรดูผิดจะได้แก้ตัวคูณก่อนวัด */}
+          {ifcNote && <span className="mt-muted"> · {ifcNote}</span>}
         </div>
       </div>
     </div>
