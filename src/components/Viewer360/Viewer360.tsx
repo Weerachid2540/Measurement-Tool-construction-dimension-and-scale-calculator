@@ -21,6 +21,35 @@ const SPHERE_RADIUS = 500;
 const MIN_FOV = 25;
 const MAX_FOV = 100;
 
+/**
+ * สร้างผิวทรงกลมให้ "พอดี" กับสัดส่วนภาพ แทนที่จะยืดภาพให้ครบ 360 องศาเสมอ
+ *
+ * ภาพ equirectangular เต็มวงคือ 360° × 180° จึงมีสัดส่วน 2:1 พอดี
+ * ไฟล์สัดส่วนอื่นถือเป็นพาโนรามาบางส่วน แปะลงผิวเพียงบางส่วนที่อัตราส่วนตรงกัน
+ * พิกเซลจึงเป็นสี่เหลี่ยมจัตุรัสเสมอ ไม่ยืดไม่ว่าไฟล์จะสัดส่วนเท่าไหร่
+ *
+ *   ratio ≥ 2  → กว้างครบ 360° แล้วลดความสูงลง (พาโนรามาแถบยาว)
+ *   ratio < 2  → สูงเต็ม 180° แล้วลดความกว้างลง (ภาพมุมกว้างทั่วไป)
+ */
+function sphereFor(ratio: number): THREE.SphereGeometry {
+  const phiLength = ratio >= 2 ? Math.PI * 2 : Math.PI * ratio;
+  const thetaLength = ratio >= 2 ? (Math.PI * 2) / ratio : Math.PI;
+
+  const geometry = new THREE.SphereGeometry(
+    SPHERE_RADIUS,
+    60,
+    40,
+    // จัดให้กึ่งกลางภาพอยู่ตรงทิศที่กล้องหันไปตอนเริ่ม ไม่งั้นเปิดมาจะเห็นพื้นที่ว่าง
+    -Math.PI / 2 - phiLength / 2,
+    phiLength,
+    (Math.PI - thetaLength) / 2,
+    thetaLength,
+  );
+  // พลิกกลับด้านเพื่อให้เห็นภาพจากข้างใน
+  geometry.scale(-1, 1, 1);
+  return geometry;
+}
+
 interface SceneRefs {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
@@ -41,13 +70,21 @@ export function Viewer360() {
   const notify = useUiStore((s) => s.notify);
   const setBusy = useUiStore((s) => s.setBusy);
 
+  const flatRef = useRef<HTMLDivElement>(null);
+
   const [mediaKind, setMediaKind] = useState<MediaKind | null>(null);
+  const [mediaUrl, setMediaUrl] = useState<string | null>(null);
   const [fileName, setFileName] = useState('');
   const [fov, setFov] = useState(75);
   const [playing, setPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [warning, setWarning] = useState<string | null>(null);
+  /**
+   * ไฟล์ที่ไม่ใช่ 2:1 ไม่ใช่ภาพ 360 การเอาไปแปะทรงกลมจะยืดจนบิดดูไม่รู้เรื่อง
+   * จึงเดาให้ตามสัดส่วนภาพ แต่เปิดให้ผู้ใช้บังคับเองได้เผื่อเดาผิด
+   */
+  const [projection, setProjection] = useState<'360' | 'flat'>('360');
 
   /* ------------------------------- scene setup ------------------------------- */
   useEffect(() => {
@@ -81,11 +118,8 @@ export function Viewer360() {
     controls.rotateSpeed = -0.3;
     controls.target.set(0, 0, 0);
 
-    // พลิกทรงกลมกลับด้านเพื่อให้เห็นภาพจากข้างใน
-    const geometry = new THREE.SphereGeometry(SPHERE_RADIUS, 60, 40);
-    geometry.scale(-1, 1, 1);
     const mesh = new THREE.Mesh(
-      geometry,
+      sphereFor(2),
       new THREE.MeshBasicMaterial({ color: 0x1e293b }),
     );
     scene.add(mesh);
@@ -114,7 +148,7 @@ export function Viewer360() {
       cancelAnimationFrame(refs.frameId);
       controls.dispose();
       disposeMaterial(mesh.material);
-      geometry.dispose();
+      mesh.geometry.dispose();
       renderer.dispose();
       container.removeChild(renderer.domElement);
       sceneRef.current = null;
@@ -148,6 +182,7 @@ export function Viewer360() {
     setPlaying(false);
     setDuration(0);
     setCurrentTime(0);
+    setMediaUrl(null);
   }, []);
 
   const applyTexture = useCallback((texture: THREE.Texture, width: number, height: number) => {
@@ -157,14 +192,19 @@ export function Viewer360() {
     disposeMaterial(refs.mesh.material);
     refs.mesh.material = new THREE.MeshBasicMaterial({ map: texture });
 
-    // ภาพ equirectangular ต้องกว้างเป็นสองเท่าของสูงพอดี ถ้าไม่ใช่แสดงว่าไฟล์
-    // ไม่ได้ต่อภาพมา (ยังเป็นภาพฟิชอายสองตา) หรือเป็นพาโนรามาบางส่วน
-    const ratio = height > 0 ? width / height : 0;
+    // ขึ้นผิวใหม่ให้ตรงสัดส่วนไฟล์ ทุกอัตราส่วนจึงดูได้โดยไม่ยืด
+    const ratio = height > 0 ? width / height : 2;
+    refs.mesh.geometry.dispose();
+    refs.mesh.geometry = sphereFor(ratio);
+
+    const full360 = Math.abs(ratio - 2) <= 0.05;
+    // ภาพแถบยาวยังมองรอบตัวได้จริง ส่วนภาพมุมแคบดูแบบธรรมดาเป็นธรรมชาติกว่า
+    setProjection(ratio >= 1.8 ? '360' : 'flat');
     setWarning(
-      Math.abs(ratio - 2) > 0.05
-        ? `สัดส่วนภาพ ${ratio.toFixed(2)}:1 ไม่ใช่ 2:1 — ภาพ 360 เต็มวงต้องเป็น 2:1 ` +
-            'ถ้าเป็นไฟล์ดิบจากกล้องให้ต่อภาพ (stitch) ในแอปของกล้องแล้วส่งออกใหม่ก่อน'
-        : null,
+      full360
+        ? null
+        : `ไฟล์นี้สัดส่วน ${ratio.toFixed(2)}:1 ไม่ใช่ 2:1 จึงไม่ใช่ภาพ 360 เต็มวง — ` +
+            'ยังดูได้ทั้งแบบโค้งและแบบธรรมดา สลับด้วยปุ่มด้านบน',
     );
   }, []);
 
@@ -175,6 +215,7 @@ export function Viewer360() {
 
       const url = URL.createObjectURL(file);
       objectUrlRef.current = url;
+      setMediaUrl(url);
       const isVideo = file.type.startsWith('video/') || /\.(mp4|webm|mov|m4v)$/i.test(file.name);
 
       try {
@@ -239,11 +280,29 @@ export function Viewer360() {
     if (refs) {
       disposeMaterial(refs.mesh.material);
       refs.mesh.material = new THREE.MeshBasicMaterial({ color: 0x1e293b });
+      refs.mesh.geometry.dispose();
+      refs.mesh.geometry = sphereFor(2);
     }
     setMediaKind(null);
     setFileName('');
     setWarning(null);
+    setProjection('360');
   }, [releaseMedia]);
+
+  /**
+   * วิดีโอตัวเดียวกันถูกใช้สองทาง — เป็น texture ของทรงกลมตอนดูแบบ 360
+   * และเป็น element ที่แสดงเองตอนดูแบบธรรมดา จึงต้องย้ายเข้า/ออกจาก DOM ตามโหมด
+   */
+  useEffect(() => {
+    const video = videoRef.current;
+    const host = flatRef.current;
+    if (!video || !host || projection !== 'flat') return;
+    video.className = 'mt-viewer360__flat-media';
+    host.appendChild(video);
+    return () => {
+      if (video.parentElement === host) host.removeChild(video);
+    };
+  }, [projection, mediaKind]);
 
   /* ------------------------------ ตัวควบคุมวิดีโอ ------------------------------ */
   useEffect(() => {
@@ -284,11 +343,22 @@ export function Viewer360() {
 
   return (
     <div className="mt-viewer3d">
+      {/* ซ่อนแทนการถอดออกจาก DOM เพราะฉาก three.js ตั้งครั้งเดียวตอน mount
+          ถ้าถอดออกแล้วใส่กลับ ต้องสร้าง renderer ใหม่ทั้งชุด */}
       <div
         className="mt-viewer3d__stage"
         ref={containerRef}
         onWheel={(e) => zoomBy(e.deltaY > 0 ? 4 : -4)}
+        style={projection === 'flat' ? { display: 'none' } : undefined}
       />
+
+      {projection === 'flat' && hasMedia && (
+        <div className="mt-viewer360__flat" ref={flatRef}>
+          {mediaKind === 'image' && mediaUrl && (
+            <img className="mt-viewer360__flat-media" src={mediaUrl} alt={fileName} />
+          )}
+        </div>
+      )}
 
       {!hasMedia && (
         <div className="mt-viewer3d__overlay">
@@ -323,10 +393,25 @@ export function Viewer360() {
             </Button>
           )}
 
-          <div className="mt-btn-group">
-            <Button size="sm" icon="zoomOut" iconOnly onClick={() => zoomBy(8)} title="ถอยออก" />
-            <Button size="sm" icon="zoomIn" iconOnly onClick={() => zoomBy(-8)} title="ซูมเข้า" />
-          </div>
+          {/* ซูมมีความหมายเฉพาะตอนดูแบบ 360 เพราะเป็นการปรับมุมมองของกล้องในฉาก */}
+          {projection === '360' && (
+            <div className="mt-btn-group">
+              <Button size="sm" icon="zoomOut" iconOnly onClick={() => zoomBy(8)} title="ถอยออก" />
+              <Button size="sm" icon="zoomIn" iconOnly onClick={() => zoomBy(-8)} title="ซูมเข้า" />
+            </div>
+          )}
+
+          {hasMedia && (
+            <Button
+              size="sm"
+              icon="panorama"
+              active={projection === '360'}
+              onClick={() => setProjection((p) => (p === '360' ? 'flat' : '360'))}
+              title="สลับระหว่างมองรอบตัวบนผิวโค้ง กับดูภาพแบบธรรมดา"
+            >
+              {projection === '360' ? 'ดูแบบธรรมดา' : 'ดูแบบโค้ง'}
+            </Button>
+          )}
 
           <Button size="sm" icon="expand" onClick={toggleFullscreen} disabled={!hasMedia}>
             เต็มจอ
@@ -362,7 +447,11 @@ export function Viewer360() {
           {hasMedia ? (
             <>
               <span>{fileName}</span>
-              <span className="mt-muted"> · ลากเพื่อมองรอบตัว · เลื่อนล้อเพื่อซูม</span>
+              <span className="mt-muted">
+                {projection === '360'
+                  ? ' · ลากเพื่อมองรอบตัว · เลื่อนล้อเพื่อซูม'
+                  : ' · แสดงแบบธรรมดา (ไม่ใช่ภาพ 360)'}
+              </span>
             </>
           ) : (
             <span className="mt-muted">
